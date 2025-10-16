@@ -108,8 +108,8 @@
         // CLAVES DE TU PROYECTO FIREBASE 'control-piscina-48181'
         // =========================================================================
         
-        // 1. Identificador de la aplicación para crear la ruta de la colección en Firestore.
-        const appId = 'checklist-piscina-hotel';
+        // 1. La ruta simplificada ya no necesita la variable appId
+        // const appId = 'checklist-piscina-hotel';
 
         // 2. Configuración de Firebase (CLAVES PÚBLICAS)
         const firebaseConfig = {
@@ -204,9 +204,9 @@
         /** Obtiene la referencia de la colección de huéspedes para el usuario actual. */
         function getGuestsCollectionRef() {
             if (!currentUserId || !db) return null;
-            // Ruta de la colección: /apps/{appId}/data/pool_guests_{userId}
-            // Esta ruta coincide con las reglas de seguridad de Firestore publicadas.
-            return collection(db, `apps/${appId}/data/pool_guests_${currentUserId}`);
+            // RUTA FINAL: Estructura: /users/{userId}/pool_guests. 
+            // Esta ruta coincide con la última regla de seguridad simple que te di.
+            return collection(db, `users/${currentUserId}/pool_guests`);
         }
 
         /** Borra todos los documentos de la colección actual. */
@@ -286,7 +286,7 @@
                 }
             }, (error) => {
                 console.error("Error al escuchar la colección:", error);
-                showNotification("Error de conexión a la lista.", 'error');
+                showNotification("Error de conexión a la lista. (Verifique reglas de seguridad)", 'error');
             });
         }
 
