@@ -10,7 +10,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
         .guest-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .guest-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); }
+        .guest-card:active { transform: translateY(0); box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); } /* Efecto al tocar en móvil */
         .check-toggle {
             cursor: pointer;
             width: 3rem; 
@@ -26,7 +26,7 @@
         
         <!-- Encabezado Fijo y Controles -->
         <header class="w-full bg-white shadow-lg p-4 sticky top-0 z-10">
-            <h1 class="text-xl font-bold text-blue-800 text-center">Control de Ingreso a Piscina</h1>
+            <h1 class="text-xl font-bold text-blue-800 text-center mb-2">Control de Ingreso a Piscina</h1>
             
             <!-- Barra de Búsqueda y Botón de Carga -->
             <div class="flex flex-col sm:flex-row justify-between mt-3 space-y-2 sm:space-y-0 sm:space-x-2">
@@ -40,16 +40,18 @@
                 <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
                 <button onclick="document.getElementById('file-input').click()"
                         id="upload-button"
-                        class="w-full sm:w-1/3 p-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition duration-150 shadow-md flex items-center justify-center">
+                        class="w-full sm:w-1/3 p-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition duration-150 shadow-md flex items-center justify-center text-sm sm:text-base">
                     Cargar Lista (CSV)
                 </button>
             </div>
             
-            <!-- Indicador de Huéspedes y UserId -->
-            <div class="text-sm text-gray-500 mt-2 flex justify-between items-center">
-                <span id="guest-count" class="font-medium text-gray-700">Cargando lista...</span>
-                <span id="entered-count" class="text-lg font-bold text-green-600">Ingresados: 0</span> <!-- Contador de Ingresados -->
-                <span id="user-id-display" title="ID de Sesión" class="text-xs text-gray-500">ID: N/A</span>
+            <!-- Indicador de Huéspedes y UserId (Optimizado para móvil) -->
+            <div class="text-sm text-gray-500 mt-3 flex justify-between items-center bg-gray-100 p-2 rounded-lg">
+                <div class="flex flex-col space-y-1 sm:space-y-0 sm:flex-row sm:space-x-4">
+                    <span id="guest-count" class="font-medium text-gray-700 text-xs sm:text-sm">Cargando lista...</span>
+                    <span id="entered-count" class="text-sm font-bold text-green-700">Ingresados: 0</span> <!-- Contador de Ingresados -->
+                </div>
+                <span id="user-id-display" title="ID de Sesión (Ya no se usa para datos)" class="text-xs text-gray-500 truncate max-w-[4rem] sm:max-w-none">ID: N/A</span>
             </div>
         </header>
 
@@ -124,6 +126,9 @@
         // El token custom no se usa en hosting público. Se deja en null.
         const initialAuthToken = null; 
         
+        // RUTA COMPARTIDA: Esta constante define la ubicación de los datos compartidos.
+        const SHARED_COLLECTION_ID = "checklist_pool_data_v1";
+
         // =========================================================================
         // --- FIN DE CONFIGURACIÓN ---
         // =========================================================================
@@ -183,7 +188,7 @@
 
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        // El userId será el UID anónimo del guardavidas/recepcionista.
+                        // El userId se sigue guardando pero ya NO se usa para la ruta de los datos compartidos.
                         currentUserId = user.uid; 
                         document.getElementById('user-id-display').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
                         setupGuestListener();
@@ -201,12 +206,12 @@
 
         // --- LÓGICA DE FIRESTORE Y DATOS ---
 
-        /** Obtiene la referencia de la colección de huéspedes para el usuario actual. */
+        /** Obtiene la referencia de la colección de huéspedes compartida. */
         function getGuestsCollectionRef() {
-            if (!currentUserId || !db) return null;
-            // RUTA FINAL: Estructura: /users/{userId}/pool_guests. 
-            // Esta ruta coincide con la última regla de seguridad simple que te di.
-            return collection(db, `users/${currentUserId}/pool_guests`);
+            if (!db) return null;
+            // Estructura COMPARTIDA: /pool_data/checklist_pool_data_v1/guests
+            // Todos los usuarios autenticados (anónimos) accederán a esta misma ruta.
+            return collection(db, `pool_data/${SHARED_COLLECTION_ID}/guests`);
         }
 
         /** Borra todos los documentos de la colección actual. */
@@ -478,12 +483,12 @@
                             <p class="text-lg font-semibold truncate ${checked ? 'text-gray-700' : 'text-gray-900'}">
                                 ${guest.name}
                             </p>
-                            <p class="text-sm ${checked ? 'text-green-600 font-medium' : 'text-gray-500'} flex items-center space-x-3">
-                                <span class="text-gray-400 font-normal">Reserva: <span class="font-medium text-gray-600">${guest.reservationCode}</span></span>
-                                <span>|</span>
+                            <div class="flex flex-col sm:flex-row sm:space-x-3 text-sm ${checked ? 'text-green-600 font-medium' : 'text-gray-500'} mt-1">
+                                <span class="text-gray-400 font-normal truncate max-w-full sm:max-w-xs">Reserva: <span class="font-medium text-gray-600">${guest.reservationCode}</span></span>
+                                <span class="hidden sm:inline">|</span>
                                 <span class="text-gray-400 font-normal">Hab: <span class="font-medium text-gray-600">${guest.room}</span></span>
-                            </p>
-                            <p class="text-xs ${checked ? 'text-green-700' : 'text-gray-400'}">
+                            </div>
+                            <p class="text-xs ${checked ? 'text-green-700' : 'text-gray-400'} mt-1">
                                 ${checked ? 'MARCADO COMO INGRESADO' : 'PENDIENTE DE INGRESO'}
                             </p>
                         </div>
