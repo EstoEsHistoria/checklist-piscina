@@ -110,9 +110,6 @@
         // CLAVES DE TU PROYECTO FIREBASE 'control-piscina-48181'
         // =========================================================================
         
-        // 1. La ruta simplificada ya no necesita la variable appId
-        // const appId = 'checklist-piscina-hotel';
-
         // 2. Configuración de Firebase (CLAVES PÚBLICAS)
         const firebaseConfig = {
             apiKey: "AIzaSyD_vUGs0iDY0w45OlFjPCaOX58YI7J0xDI", 
@@ -176,6 +173,8 @@
                     showNotification("Fallo: ¡Configuración de Firebase incompleta!", 'error');
                     return;
                 }
+                
+                console.log("--- 1. INICIALIZANDO FIREBASE ---");
 
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -188,9 +187,10 @@
 
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        // El userId se sigue guardando pero ya NO se usa para la ruta de los datos compartidos.
                         currentUserId = user.uid; 
                         document.getElementById('user-id-display').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
+                        console.log(`--- 2. AUTENTICACIÓN EXITOSA ---`);
+                        console.log(`Usuario Anónimo (UID): ${currentUserId}`);
                         setupGuestListener();
                     } else {
                         showNotification("Fallo en la autenticación.", 'error');
@@ -210,8 +210,9 @@
         function getGuestsCollectionRef() {
             if (!db) return null;
             // Estructura COMPARTIDA: /pool_data/checklist_pool_data_v1/guests
-            // Todos los usuarios autenticados (anónimos) accederán a esta misma ruta.
-            return collection(db, `pool_data/${SHARED_COLLECTION_ID}/guests`);
+            const collectionPath = `pool_data/${SHARED_COLLECTION_ID}/guests`;
+            console.log(`--- 3. RUTA DE COLECCIÓN: ${collectionPath} ---`);
+            return collection(db, collectionPath);
         }
 
         /** Borra todos los documentos de la colección actual. */
@@ -290,7 +291,10 @@
                     renderList(allGuests);
                 }
             }, (error) => {
+                // ESTA ES LA FUNCIÓN DONDE SE REGISTRA EL ERROR DE PERMISOS
+                console.error("--- 4. ERROR EN ESCUCHA DE COLECCIÓN ---");
                 console.error("Error al escuchar la colección:", error);
+                console.error("CAUSA: Error de Reglas de Seguridad o datos mal ubicados.");
                 showNotification("Error de conexión a la lista. (Verifique reglas de seguridad)", 'error');
             });
         }
