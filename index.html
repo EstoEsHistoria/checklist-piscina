@@ -102,6 +102,7 @@
                             <option value="name">Ordenar...</option> 
                             <option value="name">Nombre</option>
                             <option value="room">Habitación</option>
+                            <option value="checked">Ingreso</option> <!-- NUEVA OPCIÓN -->
                         </select>
                     </div>
                 </div>
@@ -332,6 +333,7 @@
 
         /** Aplica el ordenamiento actual a la lista de huéspedes. */
         function applySorting(guests) {
+            // El ordenamiento por Ingreso es más complejo ya que requiere alternar.
             if (currentSortBy === 'name') {
                 guests.sort((a, b) => a.name.localeCompare(b.name));
             } else if (currentSortBy === 'room') {
@@ -347,6 +349,12 @@
                     // Si no, ordenar alfabéticamente (fallback)
                     return a.room.localeCompare(b.room);
                 });
+            } else if (currentSortBy === 'checked_asc') {
+                // Ordenar por INGRESADO, poniendo PENDIENTES (false) primero (ascendente)
+                guests.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? 1 : -1);
+            } else if (currentSortBy === 'checked_desc') {
+                // Ordenar por INGRESADO, poniendo INGRESADOS (true) primero (descendente)
+                guests.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? -1 : 1);
             }
         }
 
@@ -389,8 +397,26 @@
         /**
          * Función llamada al cambiar el menú desplegable.
          */
-        window.sortGuests = function(sortBy) {
-            currentSortBy = sortBy;
+        window.sortGuests = function(selectedOption) {
+            if (selectedOption === 'checked') {
+                // Lógica de alternancia para el ordenamiento por Ingreso
+                if (currentSortBy === 'checked_desc') {
+                    currentSortBy = 'checked_asc'; // Si ya está en descendente, cambia a ascendente (Pendientes Primero)
+                } else {
+                    currentSortBy = 'checked_desc'; // Por defecto, o si estaba en cualquier otro orden, Ingresados Primero
+                }
+            } else {
+                currentSortBy = selectedOption;
+            }
+            
+            // Reajustar la selección del dropdown para que muestre el valor "Ingreso" sin cambiar el valor interno
+            const selectElement = document.getElementById('sort-by');
+            if (selectElement.value !== 'name' && selectElement.value !== 'room') {
+                // Si el valor actual es checked_asc/desc, forzamos que el display muestre 'checked'
+                selectElement.value = 'checked';
+            }
+
+
             // Al cambiar el criterio, reordenamos la lista actual y la volvemos a renderizar
             applySorting(allGuests);
             renderList(allGuests); 
