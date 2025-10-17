@@ -8,10 +8,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fuente Inter -->
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #e5f5fb; } /* Fondo ligeramente más azulado */
-        .header-bg { background-color: #979AAA; } /* Color de cabecera solicitado */
+        body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; } /* Fondo blanco para contraste */
+        /* Nuevo Degradado Caribeño: de Amarillo Suave a Azul Profundo */
+        .header-bg { 
+            background-image: linear-gradient(to right top, #FFC107, #00BCD4, #0D47A1); /* Sol, Turquesa, Azul Profundo */
+            height: 12rem; /* Altura para el efecto de gradiente */
+            box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.2);
+        } 
+        /* Eliminamos glass-card y su blur para mejorar legibilidad */
         .guest-card { transition: all 0.2s; }
-        .guest-card-checked { background-color: #d1fae5; border-left-color: #10b981; } /* Verde claro para marcado */
+        .guest-card-checked { background-color: #e0f7fa; border-left-color: #00BCD4; } /* Turquesa claro para marcado */
         .guest-card-unchecked { background-color: white; border-left-color: #e5e7eb; } /* Blanco para pendiente */
         .check-button {
             width: 3rem; 
@@ -21,57 +27,73 @@
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             transition: all 0.15s ease;
         }
+        /* Color de fondo del contenedor principal */
+        #app { background-color: #FAFAFA; }
     </style>
 </head>
 <body>
 
     <div id="app" class="min-h-screen bg-gray-50 flex flex-col items-center">
         
-        <!-- Encabezado Fijo y Controles (Estilo similar a la imagen) -->
-        <header class="w-full header-bg p-4 sticky top-0 z-10 shadow-xl">
-            <h1 class="text-xl font-bold text-white text-center mb-4">Control de Ingreso a Piscina</h1>
+        <!-- Encabezado Fijo y Controles (Estilo Caribeño/Acuático) -->
+        <header class="w-full header-bg p-4 sticky top-0 z-10">
             
-            <!-- Controles (Busqueda y Carga) -->
-            <div class="flex items-center space-x-2">
+            <!-- Contenedor del Título y Logo -->
+            <div class="relative flex items-center justify-center pt-2 mb-4">
                 
-                <!-- Botón de Carga (CSV) -->
-                <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
-                <button onclick="document.getElementById('file-input').click()"
-                        id="upload-button"
-                        class="p-2 bg-blue-400 text-white rounded-xl font-semibold hover:bg-blue-500 transition duration-150 shadow-md text-xs whitespace-nowrap">
-                    Cargar Lista (CSV)
-                </button>
+                <!-- [INICIO] COLOCAR LOGO AQUÍ -->
+                <!-- LOGO GRIS CORPORATIVO -->
+                <img id="hotel-logo" 
+                     src="logo1.png" 
+                     alt="Logo del Hotel" 
+                     onerror="this.style.display='none'"
+                     class="absolute left-0 h-10 w-auto object-contain rounded-lg"
+                >
+                <!-- [FIN] COLOCAR LOGO AQUÍ -->
                 
-                <!-- Barra de Búsqueda (Estilo integrado) -->
-                <div class="relative flex-grow">
-                    <input type="text" id="search-input" placeholder="Buscar por Nombre, Habitación o Reserva..." 
-                           class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-300 focus:border-blue-300 text-gray-800 shadow-inner"
-                           oninput="searchGuests(this.value)">
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
+                <!-- Título Centrado -->
+                <h1 class="text-xl font-extrabold text-white text-center">Control de Ingreso a Piscina</h1>
             </div>
-            
-            <!-- Contadores (Estilo de tarjeta con degradado suave) -->
-            <div class="text-sm mt-4 p-4 rounded-xl shadow-lg bg-white bg-opacity-90 border border-gray-100">
-                <div class="flex justify-between items-center">
-                    <div class="text-gray-600">
+
+            <!-- Controles Flotantes sobre el Header Background -->
+            <div class="absolute w-full max-w-xl left-1/2 transform -translate-x-1/2 top-16 px-4">
+                <div class="flex items-center space-x-2 w-full">
+                    
+                    <!-- Botón de Carga (CSV) -->
+                    <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
+                    <button onclick="document.getElementById('file-input').click()"
+                            id="upload-button"
+                            class="p-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 transition duration-150 shadow-md text-xs whitespace-nowrap">
+                        Cargar Lista
+                    </button>
+                    
+                    <!-- Barra de Búsqueda (Estilo integrado) -->
+                    <div class="relative flex-grow">
+                        <input type="text" id="search-input" placeholder="Buscar por Nombre, Habitación o Reserva..." 
+                               class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-inner"
+                               oninput="searchGuests(this.value)">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Contadores (Fondo blanco sólido, sin desenfoque) -->
+                <div class="text-sm mt-4 p-4 rounded-xl shadow-xl bg-white border border-gray-200">
+                    <div class="flex justify-between items-center text-gray-700">
                         <span id="guest-count" class="font-medium text-base">Cargando lista...</span>
                     </div>
-                    <!-- Se eliminó el signo + decorativo -->
-                    
-                    <!-- Elemento decorativo vacío para mantener el espaciado (opcional) -->
-                    <!-- <div class="check-button bg-transparent flex items-center justify-center text-gray-700 opacity-0 pointer-events-none"></div> -->
-                </div>
-                <div class="mt-2 text-lg font-extrabold text-green-700"> <!-- Color de texto en verde -->
-                    <span id="entered-count">Ingresados: 0</span>
+                    <div class="mt-1 text-xl font-bold text-green-700"> 
+                        <span id="entered-count">Ingresados: 0</span>
+                    </div>
                 </div>
             </div>
+            
         </header>
 
-        <!-- Contenedor del Checklist -->
-        <main id="guest-list-container" class="w-full max-w-xl p-4 space-y-3 pb-20">
+        <!-- Contenedor del Checklist (AJUSTE CRÍTICO DEL MARGEN) -->
+        <!-- mt-[10rem] asegura que la lista empiece POR DEBAJO de todo el encabezado fijo y flotante. -->
+        <main id="guest-list-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[10rem]"> 
             <div id="loading-message" class="text-center p-8 text-gray-500">
                 <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -95,7 +117,7 @@
     </div>
     
     <!-- Modal de Confirmación para Carga de Datos -->
-    <div id="upload-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+    <div id="upload-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-70">
         <div class="bg-white p-6 rounded-xl shadow-2xl w-11/12 max-w-sm">
             <h3 class="text-xl font-bold text-red-600 mb-4">Confirmar Carga de Lista</h3>
             <p class="text-gray-700 mb-6">
@@ -105,7 +127,7 @@
                 <button onclick="closeConfirmModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
                     Cancelar
                 </button>
-                <button id="modal-confirm-button" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition font-semibold">
+                    <button id="modal-confirm-button" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition font-semibold">
                     Sí, Borrar y Cargar
                 </button>
             </div>
@@ -149,6 +171,7 @@
         let currentUserId = null;
         let allGuests = []; // Almacena la lista completa de huéspedes.
         let parsedGuestData = []; // Almacena los datos del archivo CSV temporalmente.
+        let currentSearchTerm = ''; // Variable global para guardar el término de búsqueda
 
         // --- FUNCIONES DE UTILIDAD ---
 
@@ -303,7 +326,8 @@
                     // Ordenar alfabéticamente por nombre
                     allGuests.sort((a, b) => a.name.localeCompare(b.name));
                     
-                    renderList(allGuests);
+                    // Al recibir datos, volvemos a renderizar, aplicando el filtro actual.
+                    renderList(allGuests); 
                 }
             }, (error) => {
                 // ESTA ES LA FUNCIÓN DONDE SE REGISTRA EL ERROR DE PERMISOS
@@ -328,6 +352,9 @@
                 const docToUpdate = doc(guestRef, guestId);
                 await setDoc(docToUpdate, { isChecked: newStatus }, { merge: true });
                 
+                // NOTA CRÍTICA: Una vez que se actualiza el estado, onSnapshot se dispara 
+                // y llama a renderList(), lo cual ya mantiene el filtro. No necesitamos forzar render aquí.
+
             } catch (error) {
                 console.error("Error al actualizar el estado:", error);
                 showNotification("Error al actualizar la base de datos.", 'error');
@@ -442,32 +469,33 @@
 
         // --- LÓGICA DE RENDERIZADO Y BÚSQUEDA ---
 
-        /** Filtra la lista de huéspedes en base al texto de búsqueda. */
+        /** Filtra la lista de huéspedes en base al término de búsqueda actual. */
         window.searchGuests = function(searchTerm) {
-            const term = searchTerm.toLowerCase().trim();
-            if (term === "") {
-                renderList(allGuests);
-                return;
-            }
-
-            const filteredList = allGuests.filter(guest => 
-                guest.name.toLowerCase().includes(term) || 
-                (guest.room && guest.room.toLowerCase().includes(term)) || // Búsqueda por Habitación
-                (guest.reservationCode && guest.reservationCode.toLowerCase().includes(term)) // Búsqueda por Código de Reserva
-            );
+            // Se actualiza el término de búsqueda global
+            currentSearchTerm = searchTerm.toLowerCase().trim();
             
-            renderList(filteredList);
+            // Disparamos la renderización para que use el nuevo filtro inmediatamente
+            renderList(allGuests);
         }
 
         /** Renderiza la lista de huéspedes en el contenedor. */
-        function renderList(guestsToRender) {
+        function renderList(guests) {
             const container = document.getElementById('guest-list-container');
             const countDisplay = document.getElementById('guest-count');
             const enteredCountDisplay = document.getElementById('entered-count'); // NUEVO ELEMENTO
             
             if (!container) return;
             
-            // CALCULAR CONTADOR DE INGRESADOS
+            // 1. Aplicar el filtro si existe un término de búsqueda
+            const guestsToRender = currentSearchTerm 
+                ? guests.filter(guest => 
+                    guest.name.toLowerCase().includes(currentSearchTerm) || 
+                    (guest.room && guest.room.toLowerCase().includes(currentSearchTerm)) || 
+                    (guest.reservationCode && guest.reservationCode.toLowerCase().includes(currentSearchTerm))
+                )
+                : guests;
+
+            // CALCULAR CONTADOR DE INGRESADOS (siempre sobre allGuests)
             const enteredCount = allGuests.filter(guest => guest.isChecked).length;
             
             // Actualizar contadores
