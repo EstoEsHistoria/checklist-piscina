@@ -3,55 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checklist de Huéspedes - Piscina</title>
+    <title>Control de Ingreso a Piscina</title>
     <!-- Carga de Tailwind CSS para estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fuente Inter -->
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
-        .guest-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .guest-card:active { transform: translateY(0); box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); } /* Efecto al tocar en móvil */
-        .check-toggle {
-            cursor: pointer;
+        body { font-family: 'Inter', sans-serif; background-color: #e5f5fb; } /* Fondo ligeramente más azulado */
+        .header-bg { background-color: #979AAA; } /* Color de cabecera solicitado */
+        .guest-card { transition: all 0.2s; }
+        .guest-card-checked { background-color: #d1fae5; border-left-color: #10b981; } /* Verde claro para marcado */
+        .guest-card-unchecked { background-color: white; border-left-color: #e5e7eb; } /* Blanco para pendiente */
+        .check-button {
             width: 3rem; 
             height: 3rem;
             min-width: 3rem;
+            border-radius: 9999px; /* Circular */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.15s ease;
         }
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body>
 
     <div id="app" class="min-h-screen bg-gray-50 flex flex-col items-center">
         
-        <!-- Encabezado Fijo y Controles -->
-        <header class="w-full bg-white shadow-lg p-4 sticky top-0 z-10">
-            <h1 class="text-xl font-bold text-blue-800 text-center mb-2">Control de Ingreso a Piscina</h1>
+        <!-- Encabezado Fijo y Controles (Estilo similar a la imagen) -->
+        <header class="w-full header-bg p-4 sticky top-0 z-10 shadow-xl">
+            <h1 class="text-xl font-bold text-white text-center mb-4">Control de Ingreso a Piscina</h1>
             
-            <!-- Barra de Búsqueda y Botón de Carga -->
-            <div class="flex flex-col sm:flex-row justify-between mt-3 space-y-2 sm:space-y-0 sm:space-x-2">
+            <!-- Controles (Busqueda y Carga) -->
+            <div class="flex items-center space-x-2">
                 
-                <!-- Barra de Búsqueda -->
-                <input type="text" id="search-input" placeholder="Buscar por Nombre, Reserva o Habitación..." 
-                       class="w-full sm:w-2/3 p-3 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700 shadow-inner"
-                       oninput="searchGuests(this.value)">
-
-                <!-- Botón de Carga (Simulación) -->
+                <!-- Botón de Carga (CSV) -->
                 <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
                 <button onclick="document.getElementById('file-input').click()"
                         id="upload-button"
-                        class="w-full sm:w-1/3 p-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition duration-150 shadow-md flex items-center justify-center text-sm sm:text-base">
+                        class="p-2 bg-blue-400 text-white rounded-xl font-semibold hover:bg-blue-500 transition duration-150 shadow-md text-xs whitespace-nowrap">
                     Cargar Lista (CSV)
                 </button>
+                
+                <!-- Barra de Búsqueda (Estilo integrado) -->
+                <div class="relative flex-grow">
+                    <input type="text" id="search-input" placeholder="Buscar por Nombre, Habitación o Reserva..." 
+                           class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-300 focus:border-blue-300 text-gray-800 shadow-inner"
+                           oninput="searchGuests(this.value)">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
             </div>
             
-            <!-- Indicador de Huéspedes y UserId (Optimizado para móvil) -->
-            <div class="text-sm text-gray-500 mt-3 flex justify-between items-center bg-gray-100 p-2 rounded-lg">
-                <div class="flex flex-col space-y-1 sm:space-y-0 sm:flex-row sm:space-x-4">
-                    <span id="guest-count" class="font-medium text-gray-700 text-xs sm:text-sm">Cargando lista...</span>
-                    <span id="entered-count" class="text-sm font-bold text-green-700">Ingresados: 0</span> <!-- Contador de Ingresados -->
+            <!-- Contadores (Estilo de tarjeta con degradado suave) -->
+            <div class="text-sm mt-4 p-4 rounded-xl shadow-lg bg-white bg-opacity-90 border border-gray-100">
+                <div class="flex justify-between items-center">
+                    <div class="text-gray-600">
+                        <span id="guest-count" class="font-medium text-base">Cargando lista...</span>
+                    </div>
+                    <!-- Se eliminó el signo + decorativo -->
+                    
+                    <!-- Elemento decorativo vacío para mantener el espaciado (opcional) -->
+                    <!-- <div class="check-button bg-transparent flex items-center justify-center text-gray-700 opacity-0 pointer-events-none"></div> -->
                 </div>
-                <span id="user-id-display" title="ID de Sesión (Ya no se usa para datos)" class="text-xs text-gray-500 truncate max-w-[4rem] sm:max-w-none">ID: N/A</span>
+                <div class="mt-2 text-lg font-extrabold text-green-700"> <!-- Color de texto en verde -->
+                    <span id="entered-count">Ingresados: 0</span>
+                </div>
             </div>
         </header>
 
@@ -116,7 +131,6 @@
             authDomain: "control-piscina-48181.firebaseapp.com", 
             projectId: "control-piscina-48181", 
             storageBucket: "control-piscina-48181.firebasestorage.app", 
-            messagingSenderId: "651276695583", 
             appId: "1:651276695583:web:02a25b22bcb52d5a05fd2a" 
         };
         
@@ -174,8 +188,6 @@
                     return;
                 }
                 
-                console.log("--- 1. INICIALIZANDO FIREBASE ---");
-
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
@@ -186,15 +198,22 @@
                 }
 
                 onAuthStateChanged(auth, (user) => {
+                    const userIdDisplay = document.getElementById('user-id-display');
+                    const loadingMessage = document.getElementById('loading-message');
+
                     if (user) {
                         currentUserId = user.uid; 
-                        document.getElementById('user-id-display').textContent = `ID: ${currentUserId.substring(0, 8)}...`;
-                        console.log(`--- 2. AUTENTICACIÓN EXITOSA ---`);
-                        console.log(`Usuario Anónimo (UID): ${currentUserId}`);
+                        // FIX: Comprobación de existencia del elemento antes de asignar textContent
+                        if (userIdDisplay) {
+                            userIdDisplay.textContent = `ID: ${currentUserId.substring(0, 8)}...`;
+                        }
                         setupGuestListener();
                     } else {
+                        // FIX: Comprobación de existencia del elemento antes de asignar textContent
+                        if (loadingMessage) {
+                            loadingMessage.textContent = "Error de autenticación. Recargue la página.";
+                        }
                         showNotification("Fallo en la autenticación.", 'error');
-                        document.getElementById('loading-message').textContent = "Error de autenticación. Recargue la página.";
                     }
                 });
 
@@ -211,7 +230,6 @@
             if (!db) return null;
             // Estructura COMPARTIDA: /pool_data/checklist_pool_data_v1/guests
             const collectionPath = `pool_data/${SHARED_COLLECTION_ID}/guests`;
-            console.log(`--- 3. RUTA DE COLECCIÓN: ${collectionPath} ---`);
             return collection(db, collectionPath);
         }
 
@@ -241,12 +259,9 @@
             uploadButton.disabled = true;
             uploadButton.textContent = "Subiendo...";
 
-            console.log(`Cargando ${guestDataArray.length} huéspedes...`);
-
             const batchSize = 50; // Límite de operaciones de escritura por batch
             
             for (let i = 0; i < guestDataArray.length; i += batchSize) {
-                // No se usa batch real, se usa un loop de promesas para evitar timeouts
                 const batchPromises = guestDataArray.slice(i, i + batchSize).map(guest => {
                     const docToCreate = doc(guestRef);
                     return setDoc(docToCreate, {
@@ -292,9 +307,7 @@
                 }
             }, (error) => {
                 // ESTA ES LA FUNCIÓN DONDE SE REGISTRA EL ERROR DE PERMISOS
-                console.error("--- 4. ERROR EN ESCUCHA DE COLECCIÓN ---");
                 console.error("Error al escuchar la colección:", error);
-                console.error("CAUSA: Error de Reglas de Seguridad o datos mal ubicados.");
                 showNotification("Error de conexión a la lista. (Verifique reglas de seguridad)", 'error');
             });
         }
@@ -315,10 +328,6 @@
                 const docToUpdate = doc(guestRef, guestId);
                 await setDoc(docToUpdate, { isChecked: newStatus }, { merge: true });
                 
-                const guestName = allGuests.find(g => g.id === guestId)?.name || 'Huésped';
-                // La notificación se dispara, pero el renderizado lo hará onSnapshot.
-                // showNotification(newStatus ? `${guestName} ingresó.` : `${guestName} salió.`, 'success'); 
-
             } catch (error) {
                 console.error("Error al actualizar el estado:", error);
                 showNotification("Error al actualizar la base de datos.", 'error');
@@ -356,8 +365,7 @@
                     // Si es punto y coma o tabulador, simplemente separamos por ese carácter
                     values = line.split(separator);
                 } else {
-                    // Separador es coma (',') - usamos regex para comas dentro de comillas (si las hubiera)
-                    // NOTA: Esta regex es compleja y puede fallar con formatos no estándar. Simplificaremos a split.
+                    // Separador es coma (',')
                     values = line.split(separator);
                 }
                 
@@ -475,31 +483,34 @@
             const html = guestsToRender.map(guest => {
                 const checked = guest.isChecked;
                 const baseClasses = "guest-card w-full p-3 flex justify-between items-center rounded-xl shadow-md cursor-pointer select-none border-l-8";
-                const checkBg = checked ? "bg-green-100 border-green-500" : "bg-white border-gray-300";
-                const checkIcon = checked ? 
-                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white bg-green-500 rounded-full p-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>` : 
-                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>`;
+                const checkBg = checked ? "guest-card-checked" : "guest-card-unchecked";
                 
+                // Icono + o Checkmark
+                const icon = checked ? 
+                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>` : 
+                    `<svg class="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>`;
+
+
                 return `
                     <div class="${baseClasses} ${checkBg}" onclick="toggleCheckin('${guest.id}', ${checked})">
                         <!-- Información del Huésped -->
                         <div class="flex-grow min-w-0 pr-4">
-                            <p class="text-lg font-semibold truncate ${checked ? 'text-gray-700' : 'text-gray-900'}">
+                            <p class="text-lg font-bold truncate ${checked ? 'text-green-700' : 'text-gray-900'}">
                                 ${guest.name}
                             </p>
-                            <div class="flex flex-col sm:flex-row sm:space-x-3 text-sm ${checked ? 'text-green-600 font-medium' : 'text-gray-500'} mt-1">
-                                <span class="text-gray-400 font-normal truncate max-w-full sm:max-w-xs">Reserva: <span class="font-medium text-gray-600">${guest.reservationCode}</span></span>
-                                <span class="hidden sm:inline">|</span>
-                                <span class="text-gray-400 font-normal">Hab: <span class="font-medium text-gray-600">${guest.room}</span></span>
+                            <div class="flex flex-wrap text-xs text-gray-500 mt-1">
+                                <span class="truncate pr-2">Reserva: <span class="font-medium">${guest.reservationCode}</span></span>
+                                <span class="font-bold text-gray-400 hidden sm:inline">|</span>
+                                <span class="pl-0 sm:pl-2 text-base font-bold text-gray-700">Hab: <span class="font-extrabold">${guest.room}</span></span>
                             </div>
-                            <p class="text-xs ${checked ? 'text-green-700' : 'text-gray-400'} mt-1">
-                                ${checked ? 'MARCADO COMO INGRESADO' : 'PENDIENTE DE INGRESO'}
+                            <p class="text-xs ${checked ? 'text-green-500 font-bold' : 'text-red-500 font-semibold'} mt-1 uppercase">
+                                ${checked ? 'INGRESADO' : 'PENDIENTE DE INGRESO'}
                             </p>
                         </div>
                         
-                        <!-- Toggle de Check-in (Área de toque grande) -->
-                        <div class="check-toggle flex items-center justify-center">
-                            ${checkIcon}
+                        <!-- Toggle Button (Área de toque grande y circular) -->
+                        <div class="check-button ${checked ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-200 hover:bg-gray-300' } flex items-center justify-center">
+                            ${icon}
                         </div>
                     </div>
                 `;
