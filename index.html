@@ -39,15 +39,16 @@
         <header class="w-full header-bg p-4 sticky top-0 z-10">
             
             <!-- Contenedor del Título y Logo -->
+            <!-- LOGO: Oculto en móvil, visible en tabletas (sm:block) para evitar superposición. -->
             <div class="relative flex items-center justify-center pt-2 mb-4">
                 
                 <!-- [INICIO] COLOCAR LOGO AQUÍ -->
-                <!-- LOGO GRIS CORPORATIVO -->
+                <!-- RUTA FINAL Y CORREGIDA: 'logo1.png' -->
                 <img id="hotel-logo" 
                      src="logo1.png" 
                      alt="Logo del Hotel" 
                      onerror="this.style.display='none'"
-                     class="absolute left-0 h-10 w-auto object-contain rounded-lg"
+                     class="absolute left-0 h-10 w-auto object-contain rounded-lg hidden sm:block"
                 >
                 <!-- [FIN] COLOCAR LOGO AQUÍ -->
                 
@@ -57,17 +58,11 @@
 
             <!-- Controles Flotantes sobre el Header Background -->
             <div class="absolute w-full max-w-xl left-1/2 transform -translate-x-1/2 top-16 px-4">
+                
+                <!-- 1. BUSCADOR Y BOTONES (FILA PRINCIPAL DE CONTROLES) -->
                 <div class="flex items-center space-x-2 w-full">
                     
-                    <!-- Botón de Carga (CSV) -->
-                    <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
-                    <button onclick="document.getElementById('file-input').click()"
-                            id="upload-button"
-                            class="p-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 transition duration-150 shadow-md text-xs whitespace-nowrap">
-                        Cargar Lista
-                    </button>
-                    
-                    <!-- Barra de Búsqueda (Estilo integrado) -->
+                    <!-- Barra de Búsqueda (Flex-grow para ocupar el espacio principal) -->
                     <div class="relative flex-grow">
                         <input type="text" id="search-input" placeholder="Buscar por Nombre, Habitación o Reserva..." 
                                class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-inner"
@@ -76,15 +71,38 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
+
+                    <!-- Botón de Carga (CSV - Color Gris Solicitado) -->
+                    <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
+                    <button onclick="document.getElementById('file-input').click()"
+                            id="upload-button"
+                            class="p-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">
+                        Cargar Lista
+                    </button>
                 </div>
-                
-                <!-- Contadores (Fondo blanco sólido, sin desenfoque) -->
-                <div class="text-sm mt-4 p-4 rounded-xl shadow-xl bg-white border border-gray-200">
-                    <div class="flex justify-between items-center text-gray-700">
-                        <span id="guest-count" class="font-medium text-base">Cargando lista...</span>
+
+                <!-- 2. CONTADORES Y ORDENAMIENTO (FILA SECUNDARIA) -->
+                <div class="flex items-center mt-3 space-x-2">
+
+                    <!-- Contadores (Fondo blanco sólido - Ocupa la mayor parte del espacio) -->
+                    <div class="text-sm p-3 rounded-xl shadow-xl bg-white border border-gray-200 flex-grow">
+                        <div class="flex justify-between items-center text-gray-700">
+                            <span id="guest-count" class="font-medium text-base">Total de Huéspedes: 0</span>
+                        </div>
+                        <div class="mt-1 text-xl font-bold text-green-700"> 
+                            <span id="entered-count">Ingresados: 0</span>
+                        </div>
                     </div>
-                    <div class="mt-1 text-xl font-bold text-green-700"> 
-                        <span id="entered-count">Ingresados: 0</span>
+
+                    <!-- Menú Desplegable de Ordenamiento (Ancho ajustado) -->
+                    <div class="w-28 min-w-[7rem]"> 
+                        <label for="sort-by" class="text-xs font-semibold text-white sr-only">Ordenar por:</label>
+                        <select id="sort-by" onchange="sortGuests(this.value)" 
+                                class="w-full p-3 text-sm rounded-xl border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700 font-medium truncate">
+                            <option value="name">Ordenar...</option> 
+                            <option value="name">Nombre</option>
+                            <option value="room">Habitación</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -92,8 +110,8 @@
         </header>
 
         <!-- Contenedor del Checklist (AJUSTE CRÍTICO DEL MARGEN) -->
-        <!-- mt-[10rem] asegura que la lista empiece POR DEBAJO de todo el encabezado fijo y flotante. -->
-        <main id="guest-list-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[10rem]"> 
+        <!-- mt-[13rem] asegura que la lista empiece POR DEBAJO de todo el encabezado fijo y flotante. -->
+        <main id="guest-list-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[12rem]"> 
             <div id="loading-message" class="text-center p-8 text-gray-500">
                 <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -172,8 +190,19 @@
         let allGuests = []; // Almacena la lista completa de huéspedes.
         let parsedGuestData = []; // Almacena los datos del archivo CSV temporalmente.
         let currentSearchTerm = ''; // Variable global para guardar el término de búsqueda
+        let currentSortBy = 'name'; // Variable global para guardar el criterio de ordenamiento (Default: 'name')
 
         // --- FUNCIONES DE UTILIDAD ---
+        
+        /** Formatea un string a Title Case (primera letra de cada palabra en mayúscula). */
+        function toTitleCase(str) {
+            return str.toLowerCase().split(' ').map(function(word) {
+                // Maneja palabras vacías o espacios múltiples
+                if (word.length === 0) return '';
+                // Capitaliza la primera letra
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        }
 
         /** Muestra una notificación temporal. */
         function showNotification(message, type = 'success') {
@@ -301,6 +330,27 @@
             showNotification("Lista actualizada exitosamente.", 'success');
         }
 
+        /** Aplica el ordenamiento actual a la lista de huéspedes. */
+        function applySorting(guests) {
+            if (currentSortBy === 'name') {
+                guests.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (currentSortBy === 'room') {
+                // Ordenar primero por el valor numérico de la habitación. Si no es numérico, usa string.
+                guests.sort((a, b) => {
+                    const roomA = parseInt(a.room, 10);
+                    const roomB = parseInt(b.room, 10);
+
+                    // Si ambos son números, ordenar numéricamente
+                    if (!isNaN(roomA) && !isNaN(roomB)) {
+                        return roomA - roomB;
+                    }
+                    // Si no, ordenar alfabéticamente (fallback)
+                    return a.room.localeCompare(b.room);
+                });
+            }
+        }
+
+
         /** Carga la lista de huéspedes en tiempo real. */
         async function setupGuestListener() {
             const guestRef = getGuestsCollectionRef();
@@ -323,8 +373,8 @@
                         ...doc.data()
                     }));
 
-                    // Ordenar alfabéticamente por nombre
-                    allGuests.sort((a, b) => a.name.localeCompare(b.name));
+                    // APLICAR ORDENAMIENTO: Usamos la variable global currentSortBy
+                    applySorting(allGuests);
                     
                     // Al recibir datos, volvemos a renderizar, aplicando el filtro actual.
                     renderList(allGuests); 
@@ -334,6 +384,16 @@
                 console.error("Error al escuchar la colección:", error);
                 showNotification("Error de conexión a la lista. (Verifique reglas de seguridad)", 'error');
             });
+        }
+
+        /**
+         * Función llamada al cambiar el menú desplegable.
+         */
+        window.sortGuests = function(sortBy) {
+            currentSortBy = sortBy;
+            // Al cambiar el criterio, reordenamos la lista actual y la volvemos a renderizar
+            applySorting(allGuests);
+            renderList(allGuests); 
         }
 
         /**
@@ -353,7 +413,7 @@
                 await setDoc(docToUpdate, { isChecked: newStatus }, { merge: true });
                 
                 // NOTA CRÍTICA: Una vez que se actualiza el estado, onSnapshot se dispara 
-                // y llama a renderList(), lo cual ya mantiene el filtro. No necesitamos forzar render aquí.
+                // y llama a renderList(), lo cual ya mantiene el filtro y el orden. 
 
             } catch (error) {
                 console.error("Error al actualizar el estado:", error);
@@ -403,7 +463,8 @@
                 if (cleanValues.length >= 3 && cleanValues[0] && cleanValues[1] && cleanValues[2]) {
                     data.push({
                         reservationCode: cleanValues[0], // Columna 1
-                        name: cleanValues[1],           // Columna 2
+                        // APLICAMOS toTitleCase AQUÍ para formatear el nombre al cargar el CSV
+                        name: toTitleCase(cleanValues[1]), // Columna 2
                         room: cleanValues[2],           // Columna 3
                         isChecked: false 
                     });
