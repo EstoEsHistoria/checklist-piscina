@@ -40,7 +40,7 @@
             
             <!-- Contenedor del Título y Logo -->
             <!-- LOGO: Oculto en móvil, visible en tabletas (sm:block) para evitar superposición. -->
-            <div class="relative flex items-center justify-center pt-2 mb-4">
+            <div class="relative flex items-center justify-center pt-2 mb-4"> <!-- MARGEN AJUSTADO A mb-4 -->
                 
                 <!-- [INICIO] COLOCAR LOGO AQUÍ -->
                 <!-- RUTA FINAL Y CORREGIDA: 'logo1.png' -->
@@ -57,7 +57,8 @@
             </div>
 
             <!-- Controles Flotantes sobre el Header Background -->
-            <div class="absolute w-full max-w-xl left-1/2 transform -translate-x-1/2 top-16 px-4">
+            <!-- POSICIÓN AJUSTADA A top-14 -->
+            <div class="absolute w-full max-w-xl left-1/2 transform -translate-x-1/2 top-14 px-4">
                 
                 <!-- 1. BUSCADOR Y BOTONES (FILA PRINCIPAL DE CONTROLES) -->
                 <div class="flex items-center space-x-2 w-full">
@@ -85,9 +86,14 @@
                 <div class="flex items-center mt-3 space-x-2">
 
                     <!-- Contadores (Fondo blanco sólido - Ocupa la mayor parte del espacio) -->
-                    <div class="text-sm p-3 rounded-xl shadow-xl bg-white border border-gray-200 flex-grow">
+                    <div id="counter-card" class="text-sm p-3 rounded-xl shadow-xl bg-white border border-gray-200 flex-grow">
                         <div class="flex justify-between items-center text-gray-700">
                             <span id="guest-count" class="font-medium text-base">Total de Huéspedes: 0</span>
+                            
+                            <!-- Botón de Navegación a Historial -->
+                            <button onclick="showHistoryView()" class="text-xs text-blue-600 font-semibold hover:text-blue-800 transition whitespace-nowrap">
+                                Ver Histórico
+                            </button>
                         </div>
                         <div class="mt-1 text-xl font-bold text-green-700"> 
                             <span id="entered-count">Ingresados: 0</span>
@@ -95,7 +101,7 @@
                     </div>
 
                     <!-- Menú Desplegable de Ordenamiento (Ancho ajustado) -->
-                    <div class="w-28 min-w-[7rem]"> 
+                    <div id="sort-controls" class="w-28 min-w-[7rem]"> 
                         <label for="sort-by" class="text-xs font-semibold text-white sr-only">Ordenar por:</label>
                         <select id="sort-by" onchange="sortGuests(this.value)" 
                                 class="w-full p-3 text-sm rounded-xl border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700 font-medium truncate">
@@ -111,8 +117,8 @@
         </header>
 
         <!-- Contenedor del Checklist (AJUSTE CRÍTICO DEL MARGEN) -->
-        <!-- mt-[13rem] asegura que la lista empiece POR DEBAJO de todo el encabezado fijo y flotante. -->
-        <main id="guest-list-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[12rem]"> 
+        <!-- MARGEN REDUCIDO A mt-[5rem] para dejar el espacio más compacto -->
+        <main id="list-view-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[5rem]"> 
             <div id="loading-message" class="text-center p-8 text-gray-500">
                 <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -120,15 +126,35 @@
                 </svg>
                 <p class="mt-2">Iniciando base de datos...</p>
             </div>
+            <div id="guest-list-container" class="space-y-3">
+                <!-- Lista de huéspedes inyectada aquí -->
+            </div>
         </main>
-
-        <!-- Mensaje de Carga (Si la lista está vacía) -->
-        <div id="empty-list-message" class="w-full max-w-xl p-8 hidden text-center bg-yellow-50 border border-yellow-200 rounded-xl mt-4">
-            <p class="text-lg font-semibold text-yellow-800">¡Lista Vacía!</p>
-            <p class="text-sm text-yellow-700 mt-2">Por favor, cargue su lista de huéspedes haciendo clic en el botón <span class="font-bold">"Cargar Lista (CSV)"</span>.</p>
-            <p class="text-xs text-yellow-600 mt-2">Asegúrese de que su archivo CSV tenga las columnas: <span class="font-mono">Código Reserva, Nombre, Habitación</span>.</p>
-        </div>
-
+        
+        <!-- VISTA 2: HISTORIAL DE REGISTROS -->
+        <main id="history-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[5rem] hidden">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <button onclick="showListView()" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center">
+                    <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    Volver al Checklist
+                </button>
+                <h2 class="text-xl font-bold text-gray-800">Historial Diario</h2>
+            </div>
+            
+            <div id="history-stats-container" class="space-y-3">
+                <!-- Estadísticas históricas cargadas aquí -->
+                <p class="text-center text-gray-500">Cargando registros históricos...</p>
+            </div>
+            
+            <!-- Botón de Borrado Masivo (Limpieza de Año) -->
+            <div class="mt-8 pt-4 border-t border-red-200">
+                <button onclick="showDeleteAllModal()" class="w-full p-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition duration-150 shadow-md flex items-center justify-center">
+                    <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Eliminar TODOS los Registros Históricos
+                </button>
+            </div>
+        </main>
+        
         <!-- Mensajes de Notificación (simula alert()) -->
         <div id="notification-area" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20">
         </div>
@@ -140,14 +166,40 @@
         <div class="bg-white p-6 rounded-xl shadow-2xl w-11/12 max-w-sm">
             <h3 class="text-xl font-bold text-red-600 mb-4">Confirmar Carga de Lista</h3>
             <p class="text-gray-700 mb-6">
-                **ATENCIÓN**: Al cargar esta nueva lista de <span id="modal-guest-count" class="font-bold">0</span> huéspedes, se **borrará toda la lista actual** de la base de datos. ¿Desea continuar?
+                **ATENCIÓN**: Al cargar esta nueva lista de <span id="modal-guest-count" class="font-bold">0</span> huéspedes, se **archivará el registro actual** y se **borrará toda la lista**. ¿Desea continuar?
             </p>
             <div class="flex justify-end space-x-3">
                 <button onclick="closeConfirmModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
                     Cancelar
                 </button>
                     <button id="modal-confirm-button" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition font-semibold">
-                    Sí, Borrar y Cargar
+                    Sí, Archivar y Cargar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Confirmación para Borrado Masivo (Con Contraseña) -->
+    <div id="delete-all-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-70">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-11/12 max-w-md">
+            <h3 class="text-xl font-bold text-red-600 mb-4">¡PELIGRO! Borrado Masivo de Datos</h3>
+            <p class="text-gray-700 mb-4">
+                Esta acción **eliminará de forma PERMANENTE todos los registros históricos** (logs diarios) de la base de datos.
+            </p>
+            <label for="delete-password" class="block text-sm font-medium text-gray-700 mb-2">
+                Para confirmar, ingrese la contraseña maestra:
+            </label>
+            <input type="password" id="delete-password" 
+                   class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 mb-6"
+                   placeholder="Contraseña">
+                   
+            <div class="flex justify-between items-center">
+                <button onclick="closeDeleteAllModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+                <button id="modal-delete-button" disabled 
+                        class="px-4 py-2 bg-red-300 text-white rounded-xl font-semibold cursor-not-allowed transition">
+                    Confirmar y Borrar TODO
                 </button>
             </div>
         </div>
@@ -159,7 +211,7 @@
         // Importación de módulos de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc, serverTimestamp, orderBy, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================
         // --- CONFIGURACIÓN PARA EL HOSTING EN TU PROPIO SERVIDOR (GITHUB PAGES) ---
@@ -181,6 +233,8 @@
         // RUTA COMPARTIDA: Esta constante define la ubicación de los datos compartidos.
         const SHARED_COLLECTION_ID = "checklist_pool_data_v1";
 
+        // --- CONTRASEÑA MAESTRA PARA BORRADO MASIVO ---
+        const MASTER_PASSWORD = "sanlorenzo454"; 
         // =========================================================================
         // --- FIN DE CONFIGURACIÓN ---
         // =========================================================================
@@ -195,15 +249,33 @@
 
         // --- FUNCIONES DE UTILIDAD ---
         
+        /** Normaliza una cadena removiendo acentos y convirtiendo a minúsculas para la búsqueda. */
+        function normalizeStringForSearch(str) {
+            if (!str) return '';
+            // 1. Normaliza y remueve diacríticos (acentos)
+            // 2. Convierte a minúsculas
+            // 3. Permite la ñ (ñ se maneja con la búsqueda)
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+
         /** Formatea un string a Title Case (primera letra de cada palabra en mayúscula). */
         function toTitleCase(str) {
+            // Aseguramos que el str esté limpio antes de formatear
             return str.toLowerCase().split(' ').map(function(word) {
-                // Maneja palabras vacías o espacios múltiples
                 if (word.length === 0) return '';
-                // Capitaliza la primera letra
                 return word.charAt(0).toUpperCase() + word.slice(1);
             }).join(' ');
         }
+        
+        /** Formatea el timestamp de Firebase a una cadena legible. */
+        function formatFirebaseTimestamp(timestamp) {
+            if (!timestamp || !timestamp.toDate) return 'Fecha desconocida';
+            const date = timestamp.toDate();
+            // Formato: 17/10/2025 16:20
+            return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+
 
         /** Muestra una notificación temporal. */
         function showNotification(message, type = 'success') {
@@ -260,7 +332,8 @@
                         if (userIdDisplay) {
                             userIdDisplay.textContent = `ID: ${currentUserId.substring(0, 8)}...`;
                         }
-                        setupGuestListener();
+                        // Solo iniciamos la vista principal (Checklist)
+                        showListView(); 
                     } else {
                         // FIX: Comprobación de existencia del elemento antes de asignar textContent
                         if (loadingMessage) {
@@ -276,22 +349,43 @@
             }
         }
 
+        // --- MANEJO DE VISTAS (NAVIGATION) ---
+        
+        /** Alterna la vista a la lista de huéspedes. */
+        window.showListView = function() {
+            document.getElementById('list-view-container').classList.remove('hidden');
+            document.getElementById('history-view-container').classList.add('hidden');
+            setupGuestListener(); // Asegura que se inicie la escucha de la lista activa
+        }
+        
+        /** Alterna la vista al historial de registros. */
+        window.showHistoryView = function() {
+            document.getElementById('list-view-container').classList.add('hidden');
+            document.getElementById('history-view-container').classList.remove('hidden');
+            setupHistoryListener(); // Inicia la escucha del historial
+        }
+
         // --- LÓGICA DE FIRESTORE Y DATOS ---
 
-        /** Obtiene la referencia de la colección de huéspedes compartida. */
+        // RUTA DE LA LISTA ACTIVA (DIARIA)
         function getGuestsCollectionRef() {
             if (!db) return null;
-            // Estructura COMPARTIDA: /pool_data/checklist_pool_data_v1/guests
             const collectionPath = `pool_data/${SHARED_COLLECTION_ID}/guests`;
             return collection(db, collectionPath);
         }
+        
+        // RUTA DE LOS REGISTROS HISTÓRICOS (LOGS)
+        function getHistoryCollectionRef() {
+            if (!db) return null;
+            const historyCollectionPath = `pool_logs/stats_summary/daily_logs`;
+            return collection(db, historyCollectionPath);
+        }
 
-        /** Borra todos los documentos de la colección actual. */
+        /** Borra todos los documentos de la colección actual (lista diaria). */
         async function clearAllGuests() {
             const guestRef = getGuestsCollectionRef();
             if (!guestRef) return;
             
-            showNotification("Borrando lista anterior...", 'error');
             const snapshot = await getDocs(guestRef);
             
             const deletePromises = [];
@@ -300,19 +394,50 @@
             });
             
             await Promise.all(deletePromises);
-            showNotification("Lista anterior borrada.", 'success');
         }
+        
+        /** * ARCHIVA el resumen de la lista activa antes de borrarla y cargar la nueva.
+         * Guarda SOLO los totales diarios.
+         */
+        async function archiveCurrentList() {
+            const guestRef = getGuestsCollectionRef();
+            if (allGuests.length === 0) return; // No archivar si la lista está vacía
+
+            const enteredCount = allGuests.filter(guest => guest.isChecked).length;
+            const totalGuests = allGuests.length;
+            
+            const historyRef = getHistoryCollectionRef();
+            
+            const newLogDoc = doc(historyRef);
+            
+            await setDoc(newLogDoc, {
+                id: newLogDoc.id,
+                dateLogged: serverTimestamp(),
+                totalGuests: totalGuests,
+                enteredCount: enteredCount,
+                pendingCount: totalGuests - enteredCount // Calculado pero útil para el log
+            });
+        }
+
 
         /** Inicializa la base de datos con los datos proporcionados. */
         async function initializeGuestData(guestDataArray) {
+            const uploadButton = document.getElementById('upload-button');
+            uploadButton.disabled = true;
+            uploadButton.textContent = "Archivando y Subiendo...";
+
+            // 1. ARCHIVAR EL ESTADO ACTUAL
+            await archiveCurrentList();
+            
+            // 2. BORRAR LA LISTA VIEJA
+            showNotification("Borrando lista anterior...", 'error');
+            await clearAllGuests(); // Ya no muestra notificación, solo borra.
+            
+            // 3. CARGAR LA LISTA NUEVA
             const guestRef = getGuestsCollectionRef();
             if (!guestRef) return;
 
-            const uploadButton = document.getElementById('upload-button');
-            uploadButton.disabled = true;
-            uploadButton.textContent = "Subiendo...";
-
-            const batchSize = 50; // Límite de operaciones de escritura por batch
+            const batchSize = 50; 
             
             for (let i = 0; i < guestDataArray.length; i += batchSize) {
                 const batchPromises = guestDataArray.slice(i, i + batchSize).map(guest => {
@@ -328,37 +453,145 @@
             
             uploadButton.disabled = false;
             uploadButton.textContent = "Cargar Lista (CSV)";
-            showNotification("Lista actualizada exitosamente.", 'success');
+            showNotification("Lista de huéspedes actualizada y registro guardado.", 'success');
         }
 
-        /** Aplica el ordenamiento actual a la lista de huéspedes. */
-        function applySorting(guests) {
-            // El ordenamiento por Ingreso es más complejo ya que requiere alternar.
-            if (currentSortBy === 'name') {
-                guests.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (currentSortBy === 'room') {
-                // Ordenar primero por el valor numérico de la habitación. Si no es numérico, usa string.
-                guests.sort((a, b) => {
-                    const roomA = parseInt(a.room, 10);
-                    const roomB = parseInt(b.room, 10);
 
-                    // Si ambos son números, ordenar numéricamente
-                    if (!isNaN(roomA) && !isNaN(roomB)) {
-                        return roomA - roomB;
-                    }
-                    // Si no, ordenar alfabéticamente (fallback)
-                    return a.room.localeCompare(b.room);
-                });
-            } else if (currentSortBy === 'checked_asc') {
-                // Ordenar por INGRESADO, poniendo PENDIENTES (false) primero (ascendente)
-                guests.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? 1 : -1);
-            } else if (currentSortBy === 'checked_desc') {
-                // Ordenar por INGRESADO, poniendo INGRESADOS (true) primero (descendente)
-                guests.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? -1 : 1);
+        /** LÓGICA DE HISTORIAL: Carga y muestra los registros históricos. */
+        function setupHistoryListener() {
+            const historyRef = getHistoryCollectionRef();
+            const container = document.getElementById('history-stats-container');
+            
+            if (!historyRef) return;
+            
+            // Usamos query para ordenar por fecha de forma descendente (más reciente primero)
+            const q = query(historyRef, orderBy("dateLogged", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                let logs = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                if (logs.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500 p-8">Aún no hay registros históricos guardados.</p>';
+                    return;
+                }
+                
+                // Generar HTML para mostrar la lista de logs
+                const html = logs.map(log => {
+                    const dateStr = formatFirebaseTimestamp(log.dateLogged);
+                    const enteredPct = log.totalGuests > 0 ? Math.round((log.enteredCount / log.totalGuests) * 100) : 0;
+                    
+                    return `
+                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-600">Registro guardado:</p>
+                                    <p class="text-lg font-bold text-gray-900">${dateStr}</p>
+                                </div>
+                                <!-- Botón para Borrar Registro Individual -->
+                                <button onclick="showDeleteIndividualModal('${log.id}', '${dateStr}')" 
+                                        class="p-1 text-sm text-red-500 hover:text-red-700 transition">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                            <div class="mt-3 grid grid-cols-2 gap-3 text-center">
+                                <div class="bg-blue-50 p-2 rounded-lg">
+                                    <p class="text-xs text-blue-800 font-semibold">TOTAL</p>
+                                    <p class="text-xl font-bold text-blue-900">${log.totalGuests}</p>
+                                </div>
+                                <div class="bg-green-50 p-2 rounded-lg">
+                                    <p class="text-xs text-green-800 font-semibold">INGRESADOS</p>
+                                    <p class="text-xl font-bold text-green-900">${log.enteredCount} (${enteredPct}%)</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = html;
+            }, (error) => {
+                console.error("Error al escuchar historial:", error);
+                container.innerHTML = '<p class="text-center text-red-600 p-8">Error al cargar el historial. Verifique su conexión o reglas de Firebase.</p>';
+            });
+        }
+        
+        /** LÓGICA DE GESTIÓN DE BORRADO */
+        
+        /** Muestra el modal de borrado masivo. */
+        window.showDeleteAllModal = function() {
+            const modal = document.getElementById('delete-all-modal');
+            const passwordInput = document.getElementById('delete-password');
+            const deleteButton = document.getElementById('modal-delete-button');
+            
+            passwordInput.value = ''; // Limpiar campo
+            deleteButton.disabled = true;
+            deleteButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'cursor-pointer');
+            deleteButton.classList.add('bg-red-300', 'cursor-not-allowed');
+            
+            modal.classList.remove('hidden');
+            
+            // Listener para verificar la contraseña
+            passwordInput.oninput = function() {
+                const isCorrect = passwordInput.value === MASTER_PASSWORD;
+                deleteButton.disabled = !isCorrect;
+                
+                if (isCorrect) {
+                    deleteButton.classList.remove('bg-red-300', 'cursor-not-allowed');
+                    deleteButton.classList.add('bg-red-600', 'hover:bg-red-700', 'cursor-pointer');
+                } else {
+                    deleteButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'cursor-pointer');
+                    deleteButton.classList.add('bg-red-300', 'cursor-not-allowed');
+                }
+            };
+            
+            deleteButton.onclick = async () => {
+                closeDeleteAllModal();
+                await deleteAllHistoryLogs();
+            };
+        }
+        
+        /** Cierra el modal de borrado masivo. */
+        window.closeDeleteAllModal = function() {
+            document.getElementById('delete-all-modal').classList.add('hidden');
+        }
+        
+        /** Elimina todos los documentos del historial (usado por el modal maestro). */
+        async function deleteAllHistoryLogs() {
+            const historyRef = getHistoryCollectionRef();
+            if (!historyRef) return;
+            
+            showNotification("Eliminando TODOS los registros...", 'error');
+            
+            const snapshot = await getDocs(historyRef);
+            
+            const deletePromises = [];
+            snapshot.docs.forEach(doc => {
+                deletePromises.push(deleteDoc(doc.ref).catch(e => console.error("Fallo al borrar log:", e)));
+            });
+            
+            await Promise.all(deletePromises);
+            showNotification("¡TODOS los registros históricos han sido eliminados permanentemente!", 'success');
+        }
+        
+        /** Elimina un único registro histórico. (PENDIENTE: Modal de confirmación individual) */
+        window.showDeleteIndividualModal = async function(logId, dateStr) {
+            if (!confirm(`¿Está seguro de eliminar el registro del ${dateStr}? Esta acción es irreversible.`)) {
+                return;
+            }
+            
+            const historyRef = getHistoryCollectionRef();
+            try {
+                await deleteDoc(doc(historyRef, logId));
+                showNotification(`Registro del ${dateStr} eliminado.`, 'success');
+            } catch (error) {
+                console.error("Fallo al eliminar registro individual:", error);
+                showNotification("Error al eliminar el registro. Intente de nuevo.", 'error');
             }
         }
-
-
+        
+        
         /** Carga la lista de huéspedes en tiempo real. */
         async function setupGuestListener() {
             const guestRef = getGuestsCollectionRef();
@@ -393,105 +626,63 @@
                 showNotification("Error de conexión a la lista. (Verifique reglas de seguridad)", 'error');
             });
         }
+        
+        /** Aplica el ordenamiento actual a la lista de huéspedes. */
+        function applySorting(guests) {
+            // El ordenamiento por Ingreso es más complejo ya que requiere alternar.
+            if (currentSortBy === 'name') {
+                guests.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (currentSortBy === 'room') {
+                // Ordenar primero por el valor numérico de la habitación. Si no es numérico, usa string.
+                guests.sort((a, b) => {
+                    const roomA = parseInt(a.room, 10);
+                    const roomB = parseInt(b.room, 10);
 
-        /**
-         * Función llamada al cambiar el menú desplegable.
-         */
-        window.sortGuests = function(selectedOption) {
-            if (selectedOption === 'checked') {
-                // Lógica de alternancia para el ordenamiento por Ingreso
-                if (currentSortBy === 'checked_desc') {
-                    currentSortBy = 'checked_asc'; // Si ya está en descendente, cambia a ascendente (Pendientes Primero)
-                } else {
-                    currentSortBy = 'checked_desc'; // Por defecto, o si estaba en cualquier otro orden, Ingresados Primero
-                }
-            } else {
-                currentSortBy = selectedOption;
-            }
-            
-            // Reajustar la selección del dropdown para que muestre el valor "Ingreso" sin cambiar el valor interno
-            const selectElement = document.getElementById('sort-by');
-            if (selectElement.value !== 'name' && selectElement.value !== 'room') {
-                // Si el valor actual es checked_asc/desc, forzamos que el display muestre 'checked'
-                selectElement.value = 'checked';
-            }
-
-
-            // Al cambiar el criterio, reordenamos la lista actual y la volvemos a renderizar
-            applySorting(allGuests);
-            renderList(allGuests); 
-        }
-
-        /**
-         * Actualiza el estado de check-in/check-out de un huésped en Firestore.
-         */
-        window.toggleCheckin = async function(guestId, currentStatus) {
-            const newStatus = !currentStatus;
-            const guestRef = getGuestsCollectionRef();
-            
-            if (!guestRef) {
-                showNotification("Error: Base de datos no disponible.", 'error');
-                return;
-            }
-
-            try {
-                const docToUpdate = doc(guestRef, guestId);
-                await setDoc(docToUpdate, { isChecked: newStatus }, { merge: true });
-                
-                // NOTA CRÍTICA: Una vez que se actualiza el estado, onSnapshot se dispara 
-                // y llama a renderList(), lo cual ya mantiene el filtro y el orden. 
-
-            } catch (error) {
-                console.error("Error al actualizar el estado:", error);
-                showNotification("Error al actualizar la base de datos.", 'error');
+                    // Si ambos son números, ordenar numéricamente
+                    if (!isNaN(roomA) && !isNaN(roomB)) {
+                        return roomA - roomB;
+                    }
+                    // Si no, ordenar alfabéticamente (fallback)
+                    return a.room.localeCompare(b.room);
+                });
+            } else if (currentSortBy === 'checked_asc') {
+                // Ordenar por INGRESADO, poniendo PENDIENTES (false) primero (ascendente)
+                guests.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? 1 : -1);
+            } else if (currentSortBy === 'checked_desc') {
+                // Ordenar por INGRESADO, poniendo INGRESADOS (true) primero (descendente)
+                guests.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? -1 : 1);
             }
         }
-
-        // --- LÓGICA DE CARGA DE ARCHIVO Y PARSER ---
-
-        /** * Implementa un simple parser CSV. AHORA SOPORTA COMA (,), PUNTO Y COMA (;) Y TABULADOR (\t)
-         * ESPERA TRES COLUMNAS: Código Reserva (0), Cliente (1), Habitación (2).
-         */
+        
+        // --- LÓGICA DE CARGA DE ARCHIVO Y PARSER (MANTENIDO) ---
+        
+        /** * Implementa un simple parser CSV. */
         function parseCSV(csvText) {
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
             if (lines.length <= 1) return [];
 
-            // Determinar el separador: buscar el más común en la primera línea de datos
             const firstDataLine = lines[1];
-            let separator = ','; // Default (coma)
+            let separator = ','; 
             
             if (firstDataLine.indexOf(';') !== -1) {
-                separator = ';'; // Separador es punto y coma
+                separator = ';'; 
             } else if (firstDataLine.indexOf('\t') !== -1) { 
-                separator = '\t'; // Separador es tabulador
+                separator = '\t'; 
             }
-            // Si no encuentra ninguno, asume la coma.
 
             const data = [];
 
-            // Iteramos desde la segunda línea (i=1) para ignorar el encabezado
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i];
-                let values;
+                let values = line.split(separator);
                 
-                if (separator === ';' || separator === '\t') {
-                    // Si es punto y coma o tabulador, simplemente separamos por ese carácter
-                    values = line.split(separator);
-                } else {
-                    // Separador es coma (',')
-                    values = line.split(separator);
-                }
-                
-                // Limpiamos los valores de comillas y espacios
                 const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
 
-                // Asumiendo que las TRES primeras columnas son: Código Reserva, Nombre, Habitación
                 if (cleanValues.length >= 3 && cleanValues[0] && cleanValues[1] && cleanValues[2]) {
                     data.push({
-                        reservationCode: cleanValues[0], // Columna 1
-                        // APLICAMOS toTitleCase AQUÍ para formatear el nombre al cargar el CSV
-                        name: toTitleCase(cleanValues[1]), // Columna 2
-                        room: cleanValues[2],           // Columna 3
+                        reservationCode: cleanValues[0], 
+                        name: toTitleCase(cleanValues[1]), 
+                        room: cleanValues[2],           
                         isChecked: false 
                     });
                 }
@@ -515,77 +706,45 @@
                 const data = parseCSV(csvText);
 
                 if (data.length === 0) {
-                    // Si no hay datos, muestra el error de formato
                     showNotification("El archivo CSV está vacío o mal formateado. Revise el formato.", 'error');
                     return;
                 }
                 
-                // Almacenar los datos para la confirmación
                 parsedGuestData = data;
-                
-                // Mostrar confirmación antes de borrar y cargar.
                 showConfirmModal(data.length);
             };
             reader.readAsText(file);
-            // Limpiar el input file
             event.target.value = null; 
         }
-
-        // --- LÓGICA DE MODAL DE CONFIRMACIÓN ---
-
-        const modal = document.getElementById('upload-confirm-modal');
-        const modalCount = document.getElementById('modal-guest-count');
-        const modalConfirmButton = document.getElementById('modal-confirm-button');
-
-        function showConfirmModal(count) {
-            modalCount.textContent = count;
-            modal.classList.remove('hidden');
-            
-            // Re-adjuntar el listener para evitar duplicados
-            modalConfirmButton.onclick = async () => {
-                closeConfirmModal();
-                await clearAllGuests();
-                await initializeGuestData(parsedGuestData);
-                parsedGuestData = []; // Limpiar la data temporal
-            };
-        }
-
-        window.closeConfirmModal = function() {
-            modal.classList.add('hidden');
-        }
-
-        // --- LÓGICA DE RENDERIZADO Y BÚSQUEDA ---
-
-        /** Filtra la lista de huéspedes en base al término de búsqueda actual. */
-        window.searchGuests = function(searchTerm) {
-            // Se actualiza el término de búsqueda global
-            currentSearchTerm = searchTerm.toLowerCase().trim();
-            
-            // Disparamos la renderización para que use el nuevo filtro inmediatamente
-            renderList(allGuests);
-        }
+        
+        // --- LÓGICA DE RENDERIZADO (MANTENIDO) ---
 
         /** Renderiza la lista de huéspedes en el contenedor. */
         function renderList(guests) {
             const container = document.getElementById('guest-list-container');
             const countDisplay = document.getElementById('guest-count');
-            const enteredCountDisplay = document.getElementById('entered-count'); // NUEVO ELEMENTO
+            const enteredCountDisplay = document.getElementById('entered-count'); 
             
             if (!container) return;
             
-            // 1. Aplicar el filtro si existe un término de búsqueda
             const guestsToRender = currentSearchTerm 
-                ? guests.filter(guest => 
-                    guest.name.toLowerCase().includes(currentSearchTerm) || 
-                    (guest.room && guest.room.toLowerCase().includes(currentSearchTerm)) || 
-                    (guest.reservationCode && guest.reservationCode.toLowerCase().includes(currentSearchTerm))
-                )
+                ? guests.filter(guest => {
+                    // Normaliza el término de búsqueda
+                    const normalizedTerm = normalizeStringForSearch(currentSearchTerm);
+                    
+                    // Normaliza los campos de huésped para la comparación
+                    const normalizedName = normalizeStringForSearch(guest.name);
+                    const normalizedRoom = normalizeStringForSearch(guest.room);
+                    const normalizedReservationCode = normalizeStringForSearch(guest.reservationCode);
+                    
+                    return normalizedName.includes(normalizedTerm) || 
+                           normalizedRoom.includes(normalizedTerm) || 
+                           normalizedReservationCode.includes(normalizedTerm);
+                })
                 : guests;
 
-            // CALCULAR CONTADOR DE INGRESADOS (siempre sobre allGuests)
             const enteredCount = allGuests.filter(guest => guest.isChecked).length;
             
-            // Actualizar contadores
             countDisplay.textContent = `Total de Huéspedes: ${allGuests.length}`;
             enteredCountDisplay.textContent = `Ingresados: ${enteredCount}`;
             
@@ -594,13 +753,11 @@
                 return;
             }
 
-            // Generar el HTML de las tarjetas
             const html = guestsToRender.map(guest => {
                 const checked = guest.isChecked;
                 const baseClasses = "guest-card w-full p-3 flex justify-between items-center rounded-xl shadow-md cursor-pointer select-none border-l-8";
                 const checkBg = checked ? "guest-card-checked" : "guest-card-unchecked";
                 
-                // Icono + o Checkmark
                 const icon = checked ? 
                     `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>` : 
                     `<svg class="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>`;
