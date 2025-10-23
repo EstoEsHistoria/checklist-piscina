@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Carga de la librería SheetJS (xlsx) para leer archivos de Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Carga de Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <!-- Fuente Inter -->
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; } /* Fondo blanco para contraste */
@@ -92,10 +94,16 @@
                         <div class="flex justify-between items-center text-gray-700">
                             <span id="guest-count" class="font-medium text-base">Total de Huéspedes: 0</span>
                             
-                            <!-- Botón de Navegación a Historial -->
-                            <button onclick="window.showHistoryView()" class="text-xs text-blue-600 font-semibold hover:text-blue-800 transition whitespace-nowrap">
-                                Ver Histórico
-                            </button>
+                            <!-- Botones de Navegación -->
+                            <div class="flex space-x-2">
+                                <button onclick="window.showHistoryView()" class="text-xs text-blue-600 font-semibold hover:text-blue-800 transition whitespace-nowrap">
+                                    Ver Histórico
+                                </button>
+                                <!-- NUEVO BOTÓN DE GRÁFICOS -->
+                                <button onclick="window.showGraphView()" class="text-xs text-blue-600 font-semibold hover:text-blue-800 transition whitespace-nowrap">
+                                    Ver Gráficos
+                                </button>
+                            </div>
                         </div>
                         <div class="mt-1 text-xl font-bold text-green-700"> 
                             <span id="entered-count">Ingresados: 0</span>
@@ -160,6 +168,29 @@
                     <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     Eliminar TODOS los Registros Históricos
                 </button>
+            </div>
+        </main>
+
+        <!-- VISTA 3: GRÁFICOS DE ESTADÍSTICAS -->
+        <main id="graph-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[5rem] hidden">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <button onclick="window.showListView()" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center">
+                    <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    Volver al Checklist
+                </button>
+                <h2 class="text-xl font-bold text-gray-800">Gráfico de Ingresos Diarios</h2>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                <p id="chart-status" class="text-center text-sm text-gray-500 mb-4">Gráfico de los últimos 30 días.</p>
+                <div class="relative h-64 w-full">
+                    <!-- Canvas donde Chart.js dibujará el gráfico -->
+                    <canvas id="daily-chart"></canvas>
+                </div>
+            </div>
+
+            <div id="chart-message-area">
+                <!-- Mensajes de error o datos insuficientes -->
             </div>
         </main>
         
@@ -254,6 +285,7 @@
         let parsedGuestData = []; // Almacena los datos del archivo CSV temporalmente.
         let currentSearchTerm = ''; // Variable global para guardar el término de búsqueda
         let currentSortBy = 'name'; // Variable global para guardar el criterio de ordenamiento (Default: 'name')
+        let dailyChartInstance = null; // Instancia de Chart.js para evitar duplicados
 
         // --- FUNCIONES GLOBALES DE UTILIDAD ---
         
@@ -282,6 +314,13 @@
             const date = timestamp.toDate();
             // Formato: 17/10/2025 16:20
             return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        /** Formatea solo la fecha (dd/mm). */
+        function formatFirebaseDateOnly(timestamp) {
+            if (!timestamp || !timestamp.toDate) return 'N/A';
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
         }
 
 
@@ -364,15 +403,26 @@
         window.showListView = function() {
             document.getElementById('list-view-container').classList.remove('hidden');
             document.getElementById('history-view-container').classList.add('hidden');
+            document.getElementById('graph-view-container').classList.add('hidden');
             window.setupGuestListener(); // Asegura que se inicie la escucha de la lista activa
         }
         
         /** Alterna la vista al historial de registros. */
         window.showHistoryView = function() {
             document.getElementById('list-view-container').classList.add('hidden');
+            document.getElementById('graph-view-container').classList.add('hidden');
             document.getElementById('history-view-container').classList.remove('hidden');
             window.setupHistoryListener(); // Inicia la escucha del historial
         }
+
+        /** Alterna la vista a los gráficos. */
+        window.showGraphView = function() {
+            document.getElementById('list-view-container').classList.add('hidden');
+            document.getElementById('history-view-container').classList.add('hidden');
+            document.getElementById('graph-view-container').classList.remove('hidden');
+            window.setupHistoryListener(true); // Inicia la escucha, pidiendo renderizar el gráfico
+        }
+
 
         // --- LÓGICA DE FIRESTORE Y DATOS ---
 
@@ -468,10 +518,11 @@
 
 
         /** LÓGICA DE HISTORIAL: Carga y muestra los registros históricos. */
-        window.setupHistoryListener = function() {
+        window.setupHistoryListener = function(isGraphView = false) {
             const historyRef = getHistoryCollectionRef();
             const container = document.getElementById('history-stats-container');
-            
+            const graphMessageArea = document.getElementById('chart-message-area');
+
             if (!historyRef) return;
             
             // Usamos query para ordenar por fecha de forma descendente (más reciente primero)
@@ -482,52 +533,205 @@
                     id: doc.id,
                     ...doc.data()
                 }));
-
+                
                 if (logs.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500 p-8">Aún no hay registros históricos guardados.</p>';
+                    if(isGraphView) {
+                         graphMessageArea.innerHTML = '<p class="text-center text-gray-500 p-8">No hay suficientes registros para generar el gráfico.</p>';
+                    } else {
+                        container.innerHTML = '<p class="text-center text-gray-500 p-8">Aún no hay registros históricos guardados.</p>';
+                    }
                     return;
                 }
-                
-                // Generar HTML para mostrar la lista de logs
-                const html = logs.map(log => {
-                    const dateStr = formatFirebaseTimestamp(log.dateLogged);
-                    const enteredPct = log.totalGuests > 0 ? Math.round((log.enteredCount / log.totalGuests) * 100) : 0;
+
+                if (isGraphView) {
+                    prepareAndRenderChart(logs);
+                } else {
+                    // Generar HTML para mostrar la lista de logs (Vista de Historial)
+                    const html = logs.map(log => {
+                        const dateStr = formatFirebaseTimestamp(log.dateLogged);
+                        const enteredPct = log.totalGuests > 0 ? Math.round((log.enteredCount / log.totalGuests) * 100) : 0;
+                        
+                        return `
+                            <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-600">Registro guardado:</p>
+                                        <p class="text-lg font-bold text-gray-900">${dateStr}</p>
+                                    </div>
+                                    <!-- Botón para Borrar Registro Individual -->
+                                    <button onclick="window.showDeleteIndividualModal('${log.id}', '${dateStr}')" 
+                                            class="p-1 text-sm text-red-500 hover:text-red-700 transition">
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                                <div class="mt-3 grid grid-cols-2 gap-3 text-center">
+                                    <div class="bg-blue-50 p-2 rounded-lg">
+                                        <p class="text-xs text-blue-800 font-semibold">TOTAL</p>
+                                        <p class="text-xl font-bold text-blue-900">${log.totalGuests}</p>
+                                    </div>
+                                    <div class="bg-green-50 p-2 rounded-lg">
+                                        <p class="text-xs text-green-800 font-semibold">INGRESADOS</p>
+                                        <p class="text-xl font-bold text-green-900">${log.enteredCount} (${enteredPct}%)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
                     
-                    return `
-                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-600">Registro guardado:</p>
-                                    <p class="text-lg font-bold text-gray-900">${dateStr}</p>
-                                </div>
-                                <!-- Botón para Borrar Registro Individual -->
-                                <button onclick="window.showDeleteIndividualModal('${log.id}', '${dateStr}')" 
-                                        class="p-1 text-sm text-red-500 hover:text-red-700 transition">
-                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
-                            </div>
-                            <div class="mt-3 grid grid-cols-2 gap-3 text-center">
-                                <div class="bg-blue-50 p-2 rounded-lg">
-                                    <p class="text-xs text-blue-800 font-semibold">TOTAL</p>
-                                    <p class="text-xl font-bold text-blue-900">${log.totalGuests}</p>
-                                </div>
-                                <div class="bg-green-50 p-2 rounded-lg">
-                                    <p class="text-xs text-green-800 font-semibold">INGRESADOS</p>
-                                    <p class="text-xl font-bold text-green-900">${log.enteredCount} (${enteredPct}%)</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                container.innerHTML = html;
+                    container.innerHTML = html;
+                }
             }, (error) => {
                 console.error("Error al escuchar historial:", error);
-                container.innerHTML = '<p class="text-center text-red-600 p-8">Error al cargar el historial. Verifique su conexión o reglas de Firebase.</p>';
+                if(isGraphView) {
+                    graphMessageArea.innerHTML = '<p class="text-center text-red-600 p-8">Error al cargar datos del gráfico.</p>';
+                } else {
+                    container.innerHTML = '<p class="text-center text-red-600 p-8">Error al cargar el historial. Verifique su conexión o reglas de Firebase.</p>';
+                }
             });
         }
         
-        /** LÓGICA DE GESTIÓN DE BORRADO */
+        /** LÓGICA DE GRÁFICOS (CHART.JS) */
+        
+        /** Prepara los datos y llama a la función de renderizado del gráfico. */
+        function prepareAndRenderChart(logs) {
+            const chartMessageArea = document.getElementById('chart-message-area');
+            
+            // Reordenamos los logs por fecha ASCENDENTE para que el gráfico sea cronológico
+            logs.sort((a, b) => a.dateLogged.toDate() - b.dateLogged.toDate());
+            
+            // Extraemos etiquetas y datasets
+            const labels = logs.map(log => formatFirebaseDateOnly(log.dateLogged));
+            const enteredData = logs.map(log => log.enteredCount);
+            const totalData = logs.map(log => log.totalGuests);
+            
+            if (logs.length < 2) {
+                 chartMessageArea.innerHTML = '<p class="text-center text-red-600 p-8">Se necesitan al menos 2 registros para dibujar un gráfico de tendencias.</p>';
+                 if(dailyChartInstance) dailyChartInstance.destroy();
+                 return;
+            }
+
+            renderChart(labels, enteredData, totalData);
+        }
+
+        /** Renderiza el gráfico de Chart.js */
+        function renderChart(labels, enteredData, totalData) {
+            const ctx = document.getElementById('daily-chart');
+
+            // Destruye la instancia anterior si existe
+            if (dailyChartInstance) {
+                dailyChartInstance.destroy();
+            }
+
+            dailyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total de Huéspedes',
+                            data: totalData,
+                            borderColor: 'rgba(54, 162, 235, 1)', // Azul para el total
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Ingresados (Check-in)',
+                            data: enteredData,
+                            borderColor: 'rgba(75, 192, 192, 1)', // Verde/Cian para Ingresados
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cantidad de Huéspedes'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha de Registro'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                             mode: 'index',
+                             intersect: false,
+                        }
+                    }
+                }
+            });
+        }
+
+
+        /** LÓGICA DE GESTIÓN DE BORRADO Y EXPORTACIÓN */
+        
+        /** Exporta el historial de logs a un archivo CSV. */
+        window.exportHistoryToCSV = async function() {
+            const historyRef = getHistoryCollectionRef();
+            
+            try {
+                const snapshot = await getDocs(historyRef);
+                const logs = snapshot.docs.map(doc => doc.data());
+                
+                if (logs.length === 0) {
+                    window.showNotification("No hay datos en el historial para exportar.", 'error');
+                    return;
+                }
+
+                // Definimos el separador como punto y coma (;) para compatibilidad con Excel en LATAM
+                const separator = ';'; 
+                
+                // 1. Encabezados
+                let csv = `"Fecha";"Total Lista";"Ingresados";"Pendientes"\n`;
+
+                // 2. Datos
+                logs.forEach(log => {
+                    const dateStr = formatFirebaseTimestamp(log.dateLogged);
+                    const row = [
+                        `"${dateStr}"`,
+                        log.totalGuests,
+                        log.enteredCount,
+                        log.pendingCount
+                    ];
+                    csv += row.join(separator) + '\n';
+                });
+
+                // 3. Generación y descarga del Blob
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const fileName = `historial_ingresos_${new Date().toISOString().slice(0,10)}.csv`;
+                
+                const link = document.createElement("a");
+                if (link.download !== undefined) { 
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", fileName);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.showNotification("Historial exportado correctamente.", 'success');
+                }
+            } catch (error) {
+                console.error("Error en la exportación:", error);
+                window.showNotification("Fallo al exportar el historial.", 'error');
+            }
+        }
         
         /** Muestra el modal de borrado masivo. */
         window.showDeleteAllModal = function() {
