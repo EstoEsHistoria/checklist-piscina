@@ -6,6 +6,8 @@
     <title>Control de Ingreso a Piscina</title>
     <!-- Carga de Tailwind CSS para estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de la librería SheetJS (xlsx) para leer archivos de Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Fuente Inter -->
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; } /* Fondo blanco para contraste */
@@ -73,8 +75,8 @@
                         </svg>
                     </div>
 
-                    <!-- Botón de Carga (CSV - Color Gris Solicitado) -->
-                    <input type="file" id="file-input" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
+                    <!-- Botón de Carga (XLS/XLSX - Color Gris Solicitado) -->
+                    <input type="file" id="file-input" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
                     <button onclick="document.getElementById('file-input').click()"
                             id="upload-button"
                             class="p-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">
@@ -333,7 +335,7 @@
                             userIdDisplay.textContent = `ID: ${currentUserId.substring(0, 8)}...`;
                         }
                         // Solo iniciamos la vista principal (Checklist)
-                        showListView(); 
+                        window.showListView(); 
                     } else {
                         // FIX: Comprobación de existencia del elemento antes de asignar textContent
                         if (loadingMessage) {
@@ -355,14 +357,14 @@
         window.showListView = function() {
             document.getElementById('list-view-container').classList.remove('hidden');
             document.getElementById('history-view-container').classList.add('hidden');
-            setupGuestListener(); // Asegura que se inicie la escucha de la lista activa
+            window.setupGuestListener(); // Asegura que se inicie la escucha de la lista activa
         }
         
         /** Alterna la vista al historial de registros. */
         window.showHistoryView = function() {
             document.getElementById('list-view-container').classList.add('hidden');
             document.getElementById('history-view-container').classList.remove('hidden');
-            setupHistoryListener(); // Inicia la escucha del historial
+            window.setupHistoryListener(); // Inicia la escucha del historial
         }
 
         // --- LÓGICA DE FIRESTORE Y DATOS ---
@@ -452,13 +454,13 @@
             }
             
             uploadButton.disabled = false;
-            uploadButton.textContent = "Cargar Lista (CSV)";
+            uploadButton.textContent = "Cargar Lista (XLS/XLSX)";
             showNotification("Lista de huéspedes actualizada y registro guardado.", 'success');
         }
 
 
         /** LÓGICA DE HISTORIAL: Carga y muestra los registros históricos. */
-        function setupHistoryListener() {
+        window.setupHistoryListener = function() {
             const historyRef = getHistoryCollectionRef();
             const container = document.getElementById('history-stats-container');
             
@@ -491,7 +493,7 @@
                                     <p class="text-lg font-bold text-gray-900">${dateStr}</p>
                                 </div>
                                 <!-- Botón para Borrar Registro Individual -->
-                                <button onclick="showDeleteIndividualModal('${log.id}', '${dateStr}')" 
+                                <button onclick="window.showDeleteIndividualModal('${log.id}', '${dateStr}')" 
                                         class="p-1 text-sm text-red-500 hover:text-red-700 transition">
                                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
@@ -547,8 +549,8 @@
             };
             
             deleteButton.onclick = async () => {
-                closeDeleteAllModal();
-                await deleteAllHistoryLogs();
+                window.closeDeleteAllModal();
+                await window.deleteAllHistoryLogs();
             };
         }
         
@@ -558,7 +560,7 @@
         }
         
         /** Elimina todos los documentos del historial (usado por el modal maestro). */
-        async function deleteAllHistoryLogs() {
+        window.deleteAllHistoryLogs = async function() {
             const historyRef = getHistoryCollectionRef();
             if (!historyRef) return;
             
@@ -575,7 +577,7 @@
             showNotification("¡TODOS los registros históricos han sido eliminados permanentemente!", 'success');
         }
         
-        /** Elimina un único registro histórico. (PENDIENTE: Modal de confirmación individual) */
+        /** Elimina un único registro histórico. */
         window.showDeleteIndividualModal = async function(logId, dateStr) {
             if (!confirm(`¿Está seguro de eliminar el registro del ${dateStr}? Esta acción es irreversible.`)) {
                 return;
@@ -593,7 +595,7 @@
         
         
         /** Carga la lista de huéspedes en tiempo real. */
-        async function setupGuestListener() {
+        window.setupGuestListener = function() {
             const guestRef = getGuestsCollectionRef();
             if (!guestRef) return;
 
@@ -654,70 +656,147 @@
             }
         }
         
-        // --- LÓGICA DE CARGA DE ARCHIVO Y PARSER (MANTENIDO) ---
+        // --- LÓGICA DE CARGA DE ARCHIVO Y PARSER ---
         
-        /** * Implementa un simple parser CSV. */
-        function parseCSV(csvText) {
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
-            if (lines.length <= 1) return [];
+        /** * Parsea el archivo binario de Excel (XLSX/XLS) a un Array de Objetos.
+         * ESPERA TRES COLUMNAS: Código Reserva (0), Cliente (1), Habitación (2).
+         */
+        function parseExcel(buffer) {
+            try {
+                // Lee el buffer binario como un libro de trabajo de Excel
+                const workbook = XLSX.read(buffer, {type: 'array'});
+                // Toma la primera hoja
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-            const firstDataLine = lines[1];
-            let separator = ','; 
-            
-            if (firstDataLine.indexOf(';') !== -1) {
-                separator = ';'; 
-            } else if (firstDataLine.indexOf('\t') !== -1) { 
-                separator = '\t'; 
-            }
-
-            const data = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                let values = line.split(separator);
+                // Convierte la hoja a formato JSON con encabezados como Array de Arrays
+                const aoaData = XLSX.utils.sheet_to_json(worksheet, {
+                    header: 1, // Obtiene los datos como Array of Arrays
+                    raw: false, 
+                    defval: '' // Usa cadena vacía para celdas nulas
+                });
                 
-                const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+                if (aoaData.length <= 1) return []; // Solo encabezado o vacío
 
-                if (cleanValues.length >= 3 && cleanValues[0] && cleanValues[1] && cleanValues[2]) {
-                    data.push({
-                        reservationCode: cleanValues[0], 
-                        name: toTitleCase(cleanValues[1]), 
-                        room: cleanValues[2],           
-                        isChecked: false 
-                    });
+                // La primera fila es el encabezado
+                const headers = aoaData[0].map(h => h ? h.trim() : '');
+                
+                const data = [];
+
+                // Buscamos las columnas por nombre para hacer el parser más robusto a cambios de orden
+                const colIndex = {
+                    reservationCode: -1,
+                    name: -1,
+                    room: -1
+                };
+
+                headers.forEach((header, index) => {
+                    const normalizedHeader = normalizeStringForSearch(header);
+                    if (normalizedHeader.includes('codigo') && normalizedHeader.includes('reserva')) {
+                        colIndex.reservationCode = index;
+                    } else if (normalizedHeader.includes('cliente')) {
+                        colIndex.name = index;
+                    } else if (normalizedHeader.includes('habitacion') || normalizedHeader.includes('hab')) {
+                        colIndex.room = index;
+                    }
+                });
+                
+                // Validación estricta de que se encontraron las columnas necesarias
+                if (colIndex.reservationCode === -1 || colIndex.name === -1 || colIndex.room === -1) {
+                    showNotification("Error de formato: No se encontraron las columnas 'Código Reserva', 'Cliente' o 'Habitación' en la primera hoja.", 'error');
+                    return [];
                 }
-            }
-            return data;
-        }
 
-        /** Maneja la subida del archivo CSV y lo parsea. */
+                // Iteramos desde la segunda fila (i=1) para ignorar el encabezado
+                for (let i = 1; i < aoaData.length; i++) {
+                    const row = aoaData[i];
+                    
+                    const cleanReservationCode = row[colIndex.reservationCode] ? row[colIndex.reservationCode].toString().trim() : '';
+                    const cleanName = row[colIndex.name] ? row[colIndex.name].toString().trim() : '';
+                    const cleanRoom = row[colIndex.room] ? row[colIndex.room].toString().trim() : '';
+
+                    // Validación básica
+                    if (cleanReservationCode && cleanName) {
+                        data.push({
+                            reservationCode: cleanReservationCode,
+                            name: toTitleCase(cleanName), // Aplicamos formato
+                            room: cleanRoom,
+                            isChecked: false 
+                        });
+                    }
+                }
+                return data;
+
+            } catch (error) {
+                console.error("Error al parsear Excel:", error);
+                showNotification("Error: El archivo Excel está dañado o mal formateado.", 'error');
+                return [];
+            }
+        }
+        
+        /** Maneja la subida del archivo XLSX/XLS y lo parsea. */
         window.handleFileUpload = function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            if (!file.name.toLowerCase().endsWith('.csv')) {
-                showNotification("Por favor, suba un archivo CSV (el formato más simple para Excel).", 'error');
+            const fileName = file.name.toLowerCase();
+
+            if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+                showNotification("Por favor, suba un archivo Excel (.xlsx o .xls).", 'error');
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const csvText = e.target.result;
-                const data = parseCSV(csvText);
+                const buffer = e.target.result;
+                const data = parseExcel(buffer); // Llamamos al nuevo parser de Excel
 
                 if (data.length === 0) {
-                    showNotification("El archivo CSV está vacío o mal formateado. Revise el formato.", 'error');
+                    showNotification("El archivo Excel está vacío o no se pudieron extraer los datos. Revise el formato de la primera hoja.", 'error');
                     return;
                 }
                 
                 parsedGuestData = data;
                 showConfirmModal(data.length);
             };
-            reader.readAsText(file);
+            
+            // Leemos el archivo como un ArrayBuffer, necesario para SheetJS
+            reader.readAsArrayBuffer(file);
             event.target.value = null; 
         }
         
+        // --- LÓGICA DE MODAL DE CONFIRMACIÓN ---
+
+        const modal = document.getElementById('upload-confirm-modal');
+        const modalCount = document.getElementById('modal-guest-count');
+        const modalConfirmButton = document.getElementById('modal-confirm-button');
+
+        function showConfirmModal(count) {
+            modalCount.textContent = count;
+            modal.classList.remove('hidden');
+            
+            // Re-adjuntar el listener para evitar duplicados
+            modalConfirmButton.onclick = async () => {
+                closeConfirmModal();
+                // 1. Archivar estado actual + Borrar lista vieja + Cargar lista nueva
+                await initializeGuestData(parsedGuestData); 
+                parsedGuestData = []; // Limpiar la data temporal
+            };
+        }
+
+        window.closeConfirmModal = function() {
+            modal.classList.add('hidden');
+        }
+
         // --- LÓGICA DE RENDERIZADO (MANTENIDO) ---
+
+        /** Filtra la lista de huéspedes en base al término de búsqueda actual. */
+        window.searchGuests = function(searchTerm) {
+            // Se actualiza el término de búsqueda global
+            currentSearchTerm = searchTerm.toLowerCase().trim();
+            
+            // Disparamos la renderización para que use el nuevo filtro inmediatamente
+            renderList(allGuests);
+        }
 
         /** Renderiza la lista de huéspedes en el contenedor. */
         function renderList(guests) {
@@ -797,3 +876,34 @@
     </script>
 </body>
 </html>
+```
+
+I made some changes. El error `FirebaseError: Missing or insufficient permissions.` está casi siempre relacionado con un problema en las Reglas de Seguridad de Firestore. Aunque el código JavaScript está correcto, el servidor te niega el acceso porque no encuentra una regla que autorice la lectura de la colección.
+
+**Para solucionarlo, debes asegurarte de que ambas reglas de acceso compartido estén publicadas en tu consola de Firebase:**
+
+1.  **Regla 1 (Lista Activa):** Permite acceso a la lista diaria.
+    * Ruta: `/pool_data/{checklistId}/guests/{guestId}`
+2.  **Regla 2 (Historial):** Permite acceso a los logs históricos.
+    * Ruta: `/pool_logs/{statsSegment}/daily_logs/{logId}`
+
+**Acción que debes tomar:**
+
+Publica esta regla en la pestaña **"Reglas"** de Firestore (reemplazando todo):
+
+```firestore
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. REGLA PARA LA LISTA DIARIA (Checklist)
+    match /pool_data/{checklistId}/guests/{guestId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // 2. REGLA PARA LOS REGISTROS HISTÓRICOS (Logs)
+    match /pool_logs/{statsSegment}/daily_logs/{logId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
