@@ -77,11 +77,11 @@
                         </svg>
                     </div>
 
-                    <!-- Botón de Carga (XLS/XLSX - Color Gris Solicitado) -->
+                    <!-- Botón de Carga (XLS/XLSX - Color SOLICITADO: #27CCF5) -->
                     <input type="file" id="file-input" accept=".xlsx, .xls" class="hidden" onchange="window.handleFileUpload(event)">
                     <button onclick="document.getElementById('file-input').click()"
                             id="upload-button"
-                            class="p-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">
+                            class="p-3 bg-[#27CCF5] text-white rounded-xl font-semibold hover:bg-[#00B4D8] transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">
                         Cargar Lista
                     </button>
                 </div>
@@ -94,19 +94,16 @@
                         <div class="flex justify-between items-center text-gray-700">
                             <span id="guest-count" class="font-medium text-base">Total de Huéspedes: 0</span>
                             
-                            <!-- Botones de Navegación -->
-                            <div class="flex space-x-2">
-                                <button onclick="window.showHistoryView()" class="text-xs text-blue-600 font-semibold hover:text-blue-800 transition whitespace-nowrap">
-                                    Ver Histórico
-                                </button>
-                                <!-- NUEVO BOTÓN DE GRÁFICOS -->
-                                <button onclick="window.showGraphView()" class="text-xs text-blue-600 font-semibold hover:text-blue-800 transition whitespace-nowrap">
-                                    Ver Gráficos
-                                </button>
-                            </div>
+                            <!-- Botones de Navegación Antiguos (Eliminados de aquí) -->
+                            <div class="flex space-x-2 hidden"></div>
                         </div>
                         <div class="mt-1 text-xl font-bold text-green-700"> 
                             <span id="entered-count">Ingresados: 0</span>
+                        </div>
+                        
+                        <!-- TAREA A: SELLO DE ÚLTIMA ACTUALIZACIÓN -->
+                        <div class="mt-2 pt-2 border-t border-gray-100">
+                            <span id="last-updated" class="text-xs text-gray-500">Cargando...</span>
                         </div>
                     </div>
 
@@ -122,13 +119,28 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- 3. NUEVA FILA DE NAVEGACIÓN (Debajo del contador) -->
+                <div class="flex justify-between items-center mt-2 space-x-2 w-full">
+                    <button onclick="window.showHistoryView()" 
+                            class="w-1/2 p-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition shadow-md text-sm flex items-center justify-center">
+                        <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2-3-.895-3-2 1.343-2 3-2zM21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.176A9.902 9.902 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        Ver Histórico
+                    </button>
+                    <button onclick="window.showGraphView()" 
+                            class="w-1/2 p-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition shadow-md text-sm flex items-center justify-center">
+                        <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M18 10H6" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 18h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        Ver Gráficos
+                    </button>
+                </div>
+
             </div>
             
         </header>
 
         <!-- Contenedor del Checklist (AJUSTE CRÍTICO DEL MARGEN) -->
-        <!-- MARGEN REDUCIDO A mt-[5rem] para dejar el espacio más compacto -->
-        <main id="list-view-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[5rem]"> 
+        <!-- MARGEN AJUSTADO A mt-[9rem] -->
+        <main id="list-view-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[9rem]"> 
             <div id="loading-message" class="text-center p-8 text-gray-500">
                 <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -142,7 +154,7 @@
         </main>
         
         <!-- VISTA 2: HISTORIAL DE REGISTROS -->
-        <main id="history-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[5rem] hidden">
+        <main id="history-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[9rem] hidden">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <button onclick="window.showListView()" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center">
                     <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -172,7 +184,7 @@
         </main>
 
         <!-- VISTA 3: GRÁFICOS DE ESTADÍSTICAS -->
-        <main id="graph-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[5rem] hidden">
+        <main id="graph-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[9rem] hidden">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <button onclick="window.showListView()" class="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center">
                     <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -396,6 +408,8 @@
                 window.showNotification(`Error de inicio: ${error.message}`, 'error');
             }
         }
+        // FIX: Asignar al objeto window para que window.onload la encuentre
+        window.initializeFirebase = initializeFirebase;
 
         // --- MANEJO DE VISTAS (NAVIGATION) ---
         
@@ -533,6 +547,8 @@
                     id: doc.id,
                     ...doc.data()
                 }));
+
+                // ... (El resto de la función se mantiene igual para la lógica de gráficos/historial)
                 
                 if (logs.length === 0) {
                     if(isGraphView) {
@@ -717,7 +733,6 @@
                 const fileName = `historial_ingresos_${new Date().toISOString().slice(0,10)}.csv`;
                 
                 const link = document.createElement("a");
-                if (link.download !== undefined) { 
                     const url = URL.createObjectURL(blob);
                     link.setAttribute("href", url);
                     link.setAttribute("download", fileName);
@@ -726,7 +741,6 @@
                     link.click();
                     document.body.removeChild(link);
                     window.showNotification("Historial exportado correctamente.", 'success');
-                }
             } catch (error) {
                 console.error("Error en la exportación:", error);
                 window.showNotification("Fallo al exportar el historial.", 'error');
@@ -774,7 +788,7 @@
         /** Elimina todos los documentos del historial (usado por el modal maestro). */
         window.deleteAllHistoryLogs = async function() {
             const historyRef = getHistoryCollectionRef();
-            if (!historyRef) return;
+            if (!db) return;
             
             window.showNotification("Eliminando TODOS los registros...", 'error');
             
@@ -814,11 +828,13 @@
             onSnapshot(guestRef, (snapshot) => {
                 const loadingMessage = document.getElementById('loading-message');
                 const emptyMessage = document.getElementById('empty-list-message');
+                const lastUpdatedDisplay = document.getElementById('last-updated'); // Sello de tiempo
 
                 if (snapshot.empty) {
                     allGuests = [];
                     loadingMessage?.remove();
                     if(emptyMessage) emptyMessage.classList.remove('hidden');
+                    if(lastUpdatedDisplay) lastUpdatedDisplay.textContent = "No hay lista cargada.";
                 } else {
                     if(emptyMessage) emptyMessage.classList.add('hidden');
                     loadingMessage?.remove();
@@ -827,6 +843,18 @@
                         id: doc.id,
                         ...doc.data()
                     }));
+
+                    // TAREA A: LÓGICA DE SELLO DE TIEMPO
+                    if(lastUpdatedDisplay) {
+                        // Buscamos el 'createdAt' (debería ser el mismo para todos los de la carga)
+                        if (allGuests[0] && allGuests[0].createdAt) {
+                            const lastUploadDate = allGuests[0].createdAt.toDate();
+                            const formattedDate = lastUploadDate.toLocaleDateString('es-ES') + ' ' + lastUploadDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                            lastUpdatedDisplay.textContent = `Lista cargada: ${formattedDate}`;
+                        } else {
+                            lastUpdatedDisplay.textContent = "Lista cargada (fecha no disp.)"; 
+                        }
+                    }
 
                     // APLICAR ORDENAMIENTO: Usamos la variable global currentSortBy
                     applySorting(allGuests);
@@ -924,7 +952,8 @@
         // --- LÓGICA DE CARGA DE ARCHIVO Y PARSER ---
         
         /** * Parsea el archivo binario de Excel (XLSX/XLS) a un Array de Objetos.
-         * ESPERA TRES COLUMNAS: Código Reserva (0), Cliente (1), Habitación (2).
+         * ESPERA TRES COLUMNAS: Código Reserva, Cliente, Habitación.
+         * AHORA BUSCA LA COLUMNA DE CHECK OUT.
          */
         function parseExcel(buffer) {
             try {
@@ -952,20 +981,28 @@
                     reservationCode: -1,
                     name: -1,
                     room: -1
+                    // checkout: -1 // ELIMINADO
                 };
-
+                
+                // --- BÚSQUEDA DE COLUMNAS POR COINCIDENCIA ---
                 headers.forEach((header, index) => {
                     const normalizedHeader = normalizeStringForSearch(header);
-                    // Detección de columnas
+                    
+                    // Detección de Código de Reserva
                     if (normalizedHeader.includes('codigo') && normalizedHeader.includes('reserva')) {
                         colIndex.reservationCode = index;
-                    } else if (normalizedHeader.includes('cliente')) {
+                    } 
+                    // Detección de Cliente
+                    else if (normalizedHeader.includes('cliente')) {
                         colIndex.name = index;
-                    } else if (normalizedHeader.includes('habitacion') || normalizedHeader.includes('hab')) {
+                    } 
+                    // Detección de Habitación
+                    else if (normalizedHeader.includes('habitacion') || normalizedHeader.includes('hab')) {
                         colIndex.room = index;
-                    }
+                    } 
                 });
                 
+
                 // Validación estricta de que se encontraron las columnas necesarias
                 if (colIndex.reservationCode === -1 || colIndex.name === -1 || colIndex.room === -1) {
                     window.showNotification("Error de formato: No se encontraron las columnas 'Código Reserva', 'Cliente' o 'Habitación' en la primera hoja.", 'error');
@@ -979,13 +1016,14 @@
                     const cleanReservationCode = row[colIndex.reservationCode] ? row[colIndex.reservationCode].toString().trim() : '';
                     const cleanName = row[colIndex.name] ? row[colIndex.name].toString().trim() : '';
                     const cleanRoom = row[colIndex.room] ? row[colIndex.room].toString().trim() : '';
-
+                    
                     // Validación básica
                     if (cleanReservationCode && cleanName) {
                         data.push({
                             reservationCode: cleanReservationCode,
                             name: toTitleCase(cleanName), // Aplicamos formato
                             room: cleanRoom,
+                            // checkout: cleanCheckout, // ELIMINADO
                             isChecked: false 
                         });
                     }
@@ -1080,12 +1118,10 @@
                     // Normaliza los campos de huésped para la comparación
                     const normalizedName = window.normalizeStringForSearch(guest.name);
                     const normalizedRoom = window.normalizeStringForSearch(guest.room);
-                    const normalizedReservationCode = window.normalizeStringForSearch(guest.reservationCode);
                     
                     // LÓGICA CORREGIDA: Solo buscar por Nombre y Habitación
                     return normalizedName.includes(normalizedTerm) || 
                            normalizedRoom.includes(normalizedTerm);
-                           // Se elimina: || normalizedReservationCode.includes(normalizedTerm);
                 })
                 : guests;
 
@@ -1116,10 +1152,11 @@
                             <p class="text-lg font-bold truncate ${checked ? 'text-green-700' : 'text-gray-900'}">
                                 ${guest.name}
                             </p>
+                            <!-- ELIMINADA LA SECCIÓN DE CHECK-OUT -->
                             <div class="flex flex-wrap text-xs text-gray-500 mt-1">
-                                <span class="truncate pr-2">Reserva: <span class="font-medium">${guest.reservationCode}</span></span>
-                                <span class="font-bold text-gray-400 hidden sm:inline">|</span>
-                                <span class="pl-0 sm:pl-2 text-base font-bold text-gray-700">Hab: <span class="font-extrabold">${guest.room}</span></span>
+                                <span class="pl-0 text-base font-bold text-gray-700">Hab: <span class="font-extrabold">${guest.room}</span></span>
+                                <span class="font-bold text-gray-400 hidden sm:inline mx-2">|</span>
+                                <span class="pl-0 sm:pl-2 text-xs text-gray-500">Reserva: <span class="font-medium">${guest.reservationCode}</span></span>
                             </div>
                             <p class="text-xs ${checked ? 'text-green-500 font-bold' : 'text-red-500 font-semibold'} mt-1 uppercase">
                                 ${checked ? 'INGRESADO' : 'PENDIENTE DE INGRESO'}
