@@ -1,38 +1,25 @@
-:root {
-  --accent: #27CCF5;
-  --success: #10B981;
-  --danger: #EF4444;
-  --orange-alert: #ffb74d;
-}
-
-body {
-  background-color: #f9fafb;
-}
-
-/* Header vistoso */
+/* Paleta Aconcagua Mendoza */
 .header-bg {
-  background-image: linear-gradient(to right top, #FFC107, #00BCD4, #0D47A1);
-  height: 12rem;
-  box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2);
+  background: linear-gradient(90deg, #f4c300, #00bcd4, #0076be);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-/* Guest cards */
-.guest-card { transition: all 0.15s ease; }
+/* Tarjetas */
+.guest-card { transition: all 0.2s ease; }
 .guest-card-checked { background-color: #e0f7fa; border-left-color: #00BCD4; }
-.guest-card-unchecked { background-color: white; border-left-color: #e5e7eb; }
+.guest-card-unchecked { background-color: #ffffff; border-left-color: #e5e7eb; }
 .guest-card-alert { background-color: #fffbeb; border-left-color: #f97316; }
 
-/* Check button */
-.check-button {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 9999px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: all 0.2s ease;
+/* Botones redondeados */
+button {
+  transition: all 0.15s ease-in-out;
+  border-radius: 0.75rem;
 }
 
-/* Modal */
-#upload-type-modal button {
-  transition: background-color 0.2s ease;
+/* Estilo general */
+body {
+  background-color: #f7f9fc;
+  font-family: 'Inter', sans-serif;
 }
+
 
