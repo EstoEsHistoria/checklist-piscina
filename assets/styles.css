@@ -1,0 +1,26 @@
+/* Baseline styles y variables */
+:root {
+  --accent: #27CCF5;
+  --success: #10B981;
+  --danger: #EF4444;
+  --orange-alert: #ffb74d;
+}
+
+/* Header gradient */
+.header-bg {
+  background-image: linear-gradient(to right top, #FFC107, #00BCD4, #0D47A1);
+  height: 12rem;
+  box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2);
+}
+
+/* Guest card states */
+.guest-card { transition: all 0.15s ease; }
+.guest-card-checked { background-color: #e0f7fa; border-left-color: #00BCD4; }
+.guest-card-unchecked { background-color: white; border-left-color: #e5e7eb; }
+.guest-card-alert { background-color: #fffbeb; border-left-color: #f97316; }
+
+/* Check button */
+.check-button { width: 3rem; height: 3rem; min-width: 3rem; border-radius: 9999px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; }
+
+/* Small helpers */
+.truncate-ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
