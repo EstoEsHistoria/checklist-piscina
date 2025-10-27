@@ -18,68 +18,81 @@
   <div id="app" class="min-h-screen flex flex-col items-center">
 
     <!-- HEADER -->
-    <header class="w-full header-bg p-4 sticky top-0 z-10">
-      <div class="relative flex items-center justify-center pt-2 mb-4">
-        <img id="hotel-logo" src="assets/img/logo1.png" alt="Logo" 
-             class="absolute left-0 h-10 w-auto object-contain rounded-lg" />
-        <h1 class="text-xl font-extrabold text-white text-center drop-shadow-lg">
+    <header class="header-bg w-full p-5 shadow-lg relative z-10">
+      <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- LOGO -->
+        <img id="hotel-logo" src="assets/img/logo.png" alt="Logo del Hotel" class="h-12 object-contain" />
+
+        <!-- TÍTULO -->
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wide text-center drop-shadow-lg">
           Control de Ingreso a Piscina
         </h1>
       </div>
 
-      <div class="absolute w-full max-w-xl left-1/2 transform -translate-x-1/2 top-14 px-4">
-        <div class="flex items-center space-x-2 w-full">
-          <div class="relative flex-grow">
-            <input id="search-input" type="text" 
-                   placeholder="Buscar por Nombre o Habitación..." 
-                   class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-inner" />
-            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          <input type="file" id="file-input" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" class="hidden" />
-          <button id="upload-button" class="p-3 bg-[#27CCF5] text-white rounded-xl font-semibold hover:bg-[#00B4D8] transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">
-            Cargar Lista
-          </button>
+      <!-- BARRA DE BÚSQUEDA Y BOTÓN -->
+      <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div class="relative w-full sm:w-96">
+          <input id="search-input" type="text"
+                 placeholder="Buscar por Nombre o Habitación..."
+                 class="w-full p-3 pl-10 rounded-xl shadow-inner border-2 border-white focus:ring-blue-500 focus:border-blue-500 text-gray-800" />
+          <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+               xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
 
-        <div class="flex items-center mt-3 space-x-2">
-          <div id="counter-card" class="text-sm p-3 rounded-xl shadow-xl bg-white border border-gray-200 flex-grow">
-            <div class="flex justify-between items-center text-gray-700">
-              <span id="guest-count" class="font-medium text-base">Total de Huéspedes: 0</span>
-            </div>
-            <div class="mt-1 text-xl font-bold text-green-700">
-              <span id="entered-count">Ingresados: 0</span>
-            </div>
-            <div class="mt-2 pt-2 border-t border-gray-100">
-              <span id="last-updated" class="text-xs text-gray-500">Cargando...</span>
-            </div>
-          </div>
+        <input type="file" id="file-input" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" class="hidden" />
+        <button id="upload-button"
+                class="p-3 px-5 bg-[#27CCF5] text-white rounded-xl font-semibold hover:bg-[#00B4D8] transition duration-150 shadow-md">
+          Cargar Lista
+        </button>
+      </div>
 
-          <div id="sort-controls" class="w-28 min-w-[7rem]">
-            <select id="sort-by" class="w-full p-3 text-sm rounded-xl border border-gray-300 shadow-sm bg-white text-gray-700 font-medium">
-              <option value="name">Ordenar...</option>
-              <option value="name">Nombre</option>
-              <option value="room">Habitación</option>
-              <option value="checked">Ingreso</option>
-            </select>
+      <!-- ESTADÍSTICAS -->
+      <div class="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div class="bg-white rounded-xl shadow-xl px-6 py-3 border border-gray-200 text-center sm:text-left">
+          <div class="text-sm text-gray-700 font-medium">
+            <span id="guest-count">Total de Huéspedes: 0</span>
           </div>
+          <div class="text-lg font-extrabold text-green-700" id="entered-count">Ingresados: 0</div>
+          <div class="text-xs text-gray-500" id="last-updated">Cargando...</div>
         </div>
 
-        <div class="flex justify-between items-center mt-2 space-x-2 w-full">
-          <button id="btn-history" class="w-1/2 p-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600">Ver Histórico</button>
-          <button id="btn-graph" class="w-1/2 p-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600">Ver Gráficos</button>
+        <div>
+          <select id="sort-by"
+                  class="p-3 rounded-xl border border-gray-300 shadow-sm bg-white text-gray-700 font-medium">
+            <option value="name">Ordenar...</option>
+            <option value="name">Nombre</option>
+            <option value="room">Habitación</option>
+            <option value="checked">Ingreso</option>
+          </select>
         </div>
+      </div>
+
+      <!-- BOTONES DE VISTA -->
+      <div class="mt-4 flex justify-center gap-4">
+        <button id="btn-history"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold shadow-md transition">
+          Ver Histórico
+        </button>
+        <button id="btn-graph"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold shadow-md transition">
+          Ver Gráficos
+        </button>
       </div>
     </header>
 
     <!-- LISTA PRINCIPAL -->
-    <main id="list-view-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[9rem]">
+    <main id="list-view-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-6">
       <div id="loading-message" class="text-center p-8 text-gray-500">
-        <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto"
+             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
         </svg>
         <p class="mt-2">Iniciando base de datos...</p>
       </div>
@@ -87,32 +100,37 @@
     </main>
 
     <!-- NOTIFICACIONES -->
-    <div id="notification-area" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20"></div>
+    <div id="notification-area"
+         class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20"></div>
 
   </div>
 
-  <!-- MODAL DE CARGA BONITO -->
-  <div id="upload-type-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-70">
+  <!-- MODAL BONITO -->
+  <div id="upload-type-modal"
+       class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-70">
     <div class="bg-white p-6 rounded-xl shadow-2xl w-11/12 max-w-sm">
       <h3 class="text-xl font-bold text-gray-800 mb-4">Tipo de Carga</h3>
       <p class="text-gray-700 mb-6">¿Qué tipo de lista desea cargar?</p>
       <div class="space-y-3">
-        <button id="upload-full-btn" class="w-full p-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition font-semibold">
+        <button id="upload-full-btn"
+                class="w-full p-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition font-semibold">
           1. Carga Completa (IN HOUSE)
         </button>
-        <button id="upload-append-btn" class="w-full p-3 text-white bg-green-600 rounded-lg hover:bg-green-700 transition font-semibold">
+        <button id="upload-append-btn"
+                class="w-full p-3 text-white bg-green-600 rounded-lg hover:bg-green-700 transition font-semibold">
           2. Añadir Nuevas Llegadas
         </button>
-        <button id="upload-cancel-btn" class="w-full p-2 text-gray-600 text-sm hover:text-gray-800 transition">
+        <button id="upload-cancel-btn"
+                class="w-full p-2 text-gray-600 text-sm hover:text-gray-800 transition">
           Cancelar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MAIN JS -->
   <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
+
 
 
