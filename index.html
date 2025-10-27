@@ -5,35 +5,43 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Control de Ingreso a Piscina</title>
 
-  <!-- Tailwind CDN (rápido para prototipo) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- SheetJS & Chart.js (globals) -->
+  <!-- Librerías -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body class="bg-gray-50 font-sans">
-
   <div id="app" class="min-h-screen flex flex-col items-center">
 
-    <!-- Header -->
+    <!-- HEADER -->
     <header class="w-full header-bg p-4 sticky top-0 z-10">
       <div class="relative flex items-center justify-center pt-2 mb-4">
-        <img id="hotel-logo" src="img/logo1.png" alt="Logo" onerror="this.style.display='none'" class="absolute left-0 h-10 w-auto object-contain rounded-lg hidden sm:block">
-        <h1 class="text-xl font-extrabold text-white text-center">Control de Ingreso a Piscina</h1>
+        <img id="hotel-logo" src="assets/img/logo1.png" alt="Logo" 
+             class="absolute left-0 h-10 w-auto object-contain rounded-lg" />
+        <h1 class="text-xl font-extrabold text-white text-center drop-shadow-lg">
+          Control de Ingreso a Piscina
+        </h1>
       </div>
 
       <div class="absolute w-full max-w-xl left-1/2 transform -translate-x-1/2 top-14 px-4">
         <div class="flex items-center space-x-2 w-full">
           <div class="relative flex-grow">
-            <input id="search-input" type="text" placeholder="Buscar por Nombre o Habitación..." class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-inner" />
-            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input id="search-input" type="text" 
+                   placeholder="Buscar por Nombre o Habitación..." 
+                   class="w-full p-3 pl-10 border-2 border-white rounded-xl focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-inner" />
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
 
           <input type="file" id="file-input" accept=".xlsx,.xls,.xlsm,.xlsb,.ods" class="hidden" />
-          <button id="upload-button" class="p-3 bg-[#27CCF5] text-white rounded-xl font-semibold hover:bg-[#00B4D8] transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">Cargar Lista</button>
+          <button id="upload-button" class="p-3 bg-[#27CCF5] text-white rounded-xl font-semibold hover:bg-[#00B4D8] transition duration-150 shadow-md text-sm whitespace-nowrap min-w-[5rem]">
+            Cargar Lista
+          </button>
         </div>
 
         <div class="flex items-center mt-3 space-x-2">
@@ -66,7 +74,7 @@
       </div>
     </header>
 
-    <!-- MAIN: list view -->
+    <!-- LISTA PRINCIPAL -->
     <main id="list-view-container" class="w-full max-w-xl p-4 space-y-3 pb-20 mt-[9rem]">
       <div id="loading-message" class="text-center p-8 text-gray-500">
         <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -75,50 +83,36 @@
         </svg>
         <p class="mt-2">Iniciando base de datos...</p>
       </div>
-
       <div id="guest-list-container" class="space-y-3"></div>
     </main>
 
-    <!-- History view -->
-    <main id="history-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[9rem] hidden">
-      <div class="flex justify-between items-center border-b pb-3 mb-4">
-        <button id="btn-history-back" class="text-blue-600 font-semibold hover:text-blue-800">Volver al Checklist</button>
-        <h2 class="text-xl font-bold text-gray-800">Historial Diario</h2>
-      </div>
-      <button id="export-history" class="w-full p-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700">Exportar Historial a CSV (Excel)</button>
-      <div id="history-stats-container" class="space-y-3"><p class="text-center text-gray-500">Cargando registros históricos...</p></div>
-      <div class="mt-8 pt-4 border-t border-red-200">
-        <button id="delete-all" class="w-full p-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700">Eliminar TODOS los Registros Históricos</button>
-      </div>
-    </main>
-
-    <!-- Graph view -->
-    <main id="graph-view-container" class="w-full max-w-xl p-4 space-y-4 pb-20 mt-[9rem] hidden">
-      <div class="flex justify-between items-center border-b pb-3 mb-4">
-        <button id="btn-graph-back" class="text-blue-600 font-semibold hover:text-blue-800">Volver al Checklist</button>
-        <h2 class="text-xl font-bold text-gray-800">Gráfico de Ingresos Diarios</h2>
-      </div>
-
-      <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
-        <p id="chart-status" class="text-center text-sm text-gray-500 mb-4">Gráfico de los últimos 30 días.</p>
-        <div class="relative h-64 w-full">
-          <canvas id="daily-chart"></canvas>
-        </div>
-      </div>
-
-      <div id="chart-message-area"></div>
-    </main>
-
-    <!-- Notification area -->
+    <!-- NOTIFICACIONES -->
     <div id="notification-area" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20"></div>
 
   </div>
 
-  <!-- Hidden modals / inputs (handled by JS) -->
-  <div id="upload-type-modal" class="hidden"></div>
+  <!-- MODAL DE CARGA BONITO -->
+  <div id="upload-type-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-70">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-11/12 max-w-sm">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">Tipo de Carga</h3>
+      <p class="text-gray-700 mb-6">¿Qué tipo de lista desea cargar?</p>
+      <div class="space-y-3">
+        <button id="upload-full-btn" class="w-full p-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition font-semibold">
+          1. Carga Completa (IN HOUSE)
+        </button>
+        <button id="upload-append-btn" class="w-full p-3 text-white bg-green-600 rounded-lg hover:bg-green-700 transition font-semibold">
+          2. Añadir Nuevas Llegadas
+        </button>
+        <button id="upload-cancel-btn" class="w-full p-2 text-gray-600 text-sm hover:text-gray-800 transition">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
 
-  <!-- JS modules -->
+  <!-- MAIN JS -->
   <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
+
 
